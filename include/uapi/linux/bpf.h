@@ -2528,7 +2528,7 @@ struct __sk_buff {
 	/* ... here. */
 
 	__u32 data_meta;
-	struct bpf_flow_keys *flow_keys;
+	__bpf_md_ptr(struct bpf_flow_keys *, flow_keys);
 	__u64 tstamp;
 };
 
@@ -2645,8 +2645,8 @@ enum sk_action {
  * be added to the end of this structure
  */
 struct sk_msg_md {
-	void *data;
-	void *data_end;
+	__bpf_md_ptr(void *, data);
+	__bpf_md_ptr(void *, data_end);
 
 	__u32 family;
 	__u32 remote_ip4;	/* Stored in network byte order */
@@ -2662,8 +2662,9 @@ struct sk_reuseport_md {
 	 * Start of directly accessible data. It begins from
 	 * the tcp/udp header.
 	 */
-	void *data;
-	void *data_end;		/* End of directly accessible data */
+	__bpf_md_ptr(void *, data);
+	/* End of directly accessible data */
+	__bpf_md_ptr(void *, data_end);
 	/*
 	 * Total length of packet (starting from the tcp/udp header).
 	 * Note that the directly accessible bytes (data_end - data)
