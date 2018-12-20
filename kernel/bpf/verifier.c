@@ -4629,6 +4629,12 @@ static int is_branch_taken(struct bpf_reg_state *reg, u64 val, u8 opcode)
 		if (tnum_is_const(reg->var_off))
 			return !tnum_equals_const(reg->var_off, val);
 		break;
+	case BPF_JSET:
+		if ((~reg->var_off.mask & reg->var_off.value) & val)
+			return 1;
+		if (!((reg->var_off.mask | reg->var_off.value) & val))
+			return 0;
+		break;
 	case BPF_JGT:
 		if (reg->umin_value > val)
 			return 1;
@@ -4717,6 +4723,13 @@ static void reg_set_min_max(struct bpf_reg_state *true_reg,
 		 */
 		__mark_reg_known(reg, val);
 		break;
+	case BPF_JSET:
+		false_reg->var_off = tnum_and(false_reg->var_off,
+					      tnum_const(~val));
+		if (is_power_of_2(val))
+			true_reg->var_off = tnum_or(true_reg->var_off,
+						    tnum_const(val));
+		break;
 	}
 	case BPF_JGE:
 	case BPF_JGT:
@@ -4797,6 +4810,13 @@ static void reg_set_min_max_inv(struct bpf_reg_state *true_reg,
 			opcode == BPF_JEQ ? true_reg : false_reg;
 
 		__mark_reg_known(reg, val);
+		break;
+	case BPF_JSET:
+		false_reg->var_off = tnum_and(false_reg->var_off,
+					      tnum_const(~val));
+		if (is_power_of_2(val))
+			true_reg->var_off = tnum_or(true_reg->var_off,
+						    tnum_const(val));
 		break;
 	}
 	case BPF_JGE:
