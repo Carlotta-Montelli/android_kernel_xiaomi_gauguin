@@ -10,7 +10,6 @@
  */
 
 #include <linux/suspend.h>
-#include <linux/syscalls.h>
 #include <linux/reboot.h>
 #include <linux/string.h>
 #include <linux/device.h>
@@ -239,9 +238,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
 		if (data->frozen)
 			break;
 
-		printk("Syncing filesystems ... ");
-		ksys_sync();
-		printk("done.\n");
+		ksys_sync_helper();
 
 		error = freeze_processes();
 		if (error)
