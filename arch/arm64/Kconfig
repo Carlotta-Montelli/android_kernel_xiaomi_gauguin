@@ -180,6 +180,9 @@ config ARM64
 config 64BIT
 	def_bool y
 
+config ARCH_SUSPEND_NONZERO_CPU
+	def_bool y
+
 config MMU
 	def_bool y
 
