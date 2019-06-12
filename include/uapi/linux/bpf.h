@@ -3251,6 +3251,7 @@ struct bpf_sock_ops {
 	__u32 sk_uid;
 	__u32 voip_daddr;
 	__u32 voip_dport;
+	__bpf_md_ptr(struct bpf_sock *, sk);
 };
 
 /* Definitions for bpf_sock_ops_cb_flags */
