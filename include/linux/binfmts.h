@@ -162,7 +162,8 @@ static inline bool task_is_booster(struct task_struct *tsk)
 	return strstr(comm, "init")  || strstr(comm, "NodeLooperThrea") ||
 	       strstr(comm, "power") ||
 	       strstr(comm, "perf")  ||
-	       strstr(comm, "iop");
+	       strstr(comm, "iop")   ||
+	       strstr(comm, "init.qcom.post_");
 }
 
 #endif /* _LINUX_BINFMTS_H */
