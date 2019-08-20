@@ -104,6 +104,7 @@ enum bpf_cmd {
 	BPF_BTF_LOAD,
 	BPF_BTF_GET_FD_BY_ID,
 	BPF_TASK_FD_QUERY,
+	BPF_BTF_GET_NEXT_ID = 23,
 };
 
 enum bpf_map_type {
