@@ -101,6 +101,7 @@ struct bpf_map {
     struct bpf_map_memory memory;
 	u32 pages;
 	bool unpriv_array;
+	bool frozen;
 	/* 51 bytes hole */
 
 	/* The 3rd and 4th cacheline with misc members to avoid false sharing
