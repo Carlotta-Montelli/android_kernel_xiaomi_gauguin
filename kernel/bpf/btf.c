@@ -778,6 +778,8 @@ static void btf_verifier_log_vsi(struct btf_verifier_env *env,
 
 	if (!bpf_verifier_log_needed(log))
 		return;
+	if (log->level == BPF_LOG_KERNEL && !fmt)
+		return;
 	if (env->phase != CHECK_META)
 		btf_verifier_log_type(env, datasec_type, NULL);
 
