@@ -964,6 +964,8 @@ static const struct bpf_func_proto bpf_perf_event_output_proto_raw_tp = {
 	.arg5_type	= ARG_CONST_SIZE_OR_ZERO,
 };
 
+extern const struct bpf_func_proto bpf_skb_output_proto;
+
 BPF_CALL_3(bpf_get_stackid_raw_tp, struct bpf_raw_tracepoint_args *, args,
 	   struct bpf_map *, map, u64, flags)
 {
@@ -1024,6 +1026,8 @@ raw_tp_prog_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_get_socket_ptr_cookie_proto;
 	case BPF_FUNC_perf_event_output:
 		return &bpf_perf_event_output_proto_raw_tp;
+	case BPF_FUNC_skb_output:
+		return &bpf_skb_output_proto;
 	case BPF_FUNC_get_stackid:
 		return &bpf_get_stackid_proto_raw_tp;
 	case BPF_FUNC_get_stack:
