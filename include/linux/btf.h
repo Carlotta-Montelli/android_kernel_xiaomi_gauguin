@@ -53,6 +53,8 @@ bool btf_member_is_reg_int(const struct btf *btf, const struct btf_type *s,
 
 int btf_find_spin_lock(const struct btf *btf, const struct btf_type *t);
 bool btf_type_is_void(const struct btf_type *t);
+const struct btf_type *btf_type_skip_modifiers(const struct btf *btf,
+                           u32 id, u32 *res_id);
 
 #ifdef CONFIG_BPF_SYSCALL
 const struct btf_type *btf_type_by_id(const struct btf *btf, u32 type_id);
