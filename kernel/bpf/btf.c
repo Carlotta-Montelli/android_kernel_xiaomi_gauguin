@@ -212,6 +212,8 @@ struct btf {
 	refcount_t refcnt;
 	u32 id;
 	struct rcu_head rcu;
+
+	struct btf *base_btf;
 };
 
 enum verifier_phase {
@@ -397,6 +399,37 @@ static bool btf_type_is_datasec(const struct btf_type *t)
 	return BTF_INFO_KIND(t->info) == BTF_KIND_DATASEC;
 }
 
+u32 btf_nr_types(const struct btf *btf)
+{
+    u32 total = 0;
+
+    while (btf) {
+        total += btf->nr_types;
+        btf = btf->base_btf;
+    }
+
+    return total;
+}
+
+s32 btf_find_by_name_kind(const struct btf *btf, const char *name, u8 kind)
+{
+    const struct btf_type *t;
+    const char *tname;
+    u32 i, total;
+
+    total = btf_nr_types(btf);
+    for (i = 1; i < total; i++) {
+        t = btf_type_by_id(btf, i);
+        if (BTF_INFO_KIND(t->info) != kind)
+            continue;
+
+        tname = btf_name_by_offset(btf, t->name_off);
+        if (!strcmp(tname, name))
+            return i;
+    }
+
+    return -ENOENT;
+}
 
 const struct btf_type *btf_type_skip_modifiers(const struct btf *btf,
                            u32 id, u32 *res_id)
@@ -3412,6 +3445,8 @@ struct btf *btf_parse_vmlinux(void)
 	err = btf_check_all_metas(env);
 	if (err)
 		goto errout;
+
+	init_btf_sock_ids(btf);
 
 	btf_verifier_env_free(env);
 	refcount_set(&btf->refcnt, 1);
