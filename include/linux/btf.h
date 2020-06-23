@@ -40,6 +40,7 @@ int btf_get_info_by_fd(const struct btf *btf,
  *         *type_id and *ret_size will not be changed in the
  *         NULL return case.
  */
+u32 btf_nr_types(const struct btf *btf);
 const struct btf_type *btf_type_id_size(const struct btf *btf,
 					u32 *type_id,
 					u32 *ret_size);
@@ -53,6 +54,7 @@ bool btf_member_is_reg_int(const struct btf *btf, const struct btf_type *s,
 
 int btf_find_spin_lock(const struct btf *btf, const struct btf_type *t);
 bool btf_type_is_void(const struct btf_type *t);
+s32 btf_find_by_name_kind(const struct btf *btf, const char *name, u8 kind);
 const struct btf_type *btf_type_skip_modifiers(const struct btf *btf,
                            u32 id, u32 *res_id);
 
