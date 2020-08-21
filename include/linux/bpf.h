@@ -221,6 +221,7 @@ enum bpf_arg_type {
 	ARG_PTR_TO_SOCK_COMMON,	/* pointer to sock_common */
 	ARG_PTR_TO_INT,		/* pointer to int */
 	ARG_PTR_TO_LONG,	/* pointer to long */
+	ARG_PTR_TO_SOCKET,      /* pointer to bpf_sock (fullsock) */
 	ARG_PTR_TO_BTF_ID = 18,	/* pointer to in-kernel struct */
 	ARG_PTR_TO_ALLOC_MEM = 19,	/* pointer to dynamically allocated memory */
 	ARG_PTR_TO_ALLOC_MEM_OR_NULL = 20,	/* pointer to dynamically allocated memory or NULL */
