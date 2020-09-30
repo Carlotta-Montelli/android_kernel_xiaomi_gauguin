@@ -4074,7 +4074,7 @@ static const struct bpf_func_proto bpf_xdp_event_output_proto = {
 
 BPF_CALL_1(bpf_get_socket_cookie, struct sk_buff *, skb)
 {
-	return skb->sk ? sock_gen_cookie(skb->sk) : 0;
+	return skb->sk ? __sock_gen_cookie(skb->sk) : 0;
 }
 
 static const struct bpf_func_proto bpf_get_socket_cookie_proto = {
@@ -4086,7 +4086,7 @@ static const struct bpf_func_proto bpf_get_socket_cookie_proto = {
 
 BPF_CALL_1(bpf_get_socket_cookie_sock_addr, struct bpf_sock_addr_kern *, ctx)
 {
-	return sock_gen_cookie(ctx->sk);
+	return __sock_gen_cookie(ctx->sk);
 }
 
 static const struct bpf_func_proto bpf_get_socket_cookie_sock_addr_proto = {
@@ -4110,7 +4110,7 @@ const struct bpf_func_proto bpf_get_socket_ptr_cookie_proto = {
 
 BPF_CALL_1(bpf_get_socket_cookie_sock, struct sock *, ctx)
 {
-	return sock_gen_cookie(ctx);
+	return __sock_gen_cookie(ctx);
 }
 
 static const struct bpf_func_proto bpf_get_socket_cookie_sock_proto = {
@@ -4122,7 +4122,7 @@ static const struct bpf_func_proto bpf_get_socket_cookie_sock_proto = {
 
 BPF_CALL_1(bpf_get_socket_cookie_sock_ops, struct bpf_sock_ops_kern *, ctx)
 {
-	return sock_gen_cookie(ctx->sk);
+	return __sock_gen_cookie(ctx->sk);
 }
 
 static const struct bpf_func_proto bpf_get_socket_cookie_sock_ops_proto = {
@@ -4135,7 +4135,7 @@ static const struct bpf_func_proto bpf_get_socket_cookie_sock_ops_proto = {
 static u64 __bpf_get_netns_cookie(struct sock *sk)
 {
 #ifdef CONFIG_NET_NS
-	return net_gen_cookie(sk ? sk->sk_net.net : &init_net);
+	return __net_gen_cookie(sk ? sk->sk_net.net : &init_net);
 #else
 	return 0;
 #endif
