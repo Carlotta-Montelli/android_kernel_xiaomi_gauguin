@@ -129,6 +129,7 @@ ifeq ($(CONFIG_DEBUG_FS),y)
 obj-y				+= debugfs/
 else
 obj-$(CONFIG_ANDROID)		+= debugfs/
+obj-$(CONFIG_DEBUG_KMEMLEAK)	+= debugfs/
 endif
 obj-$(CONFIG_TRACING)		+= tracefs/
 obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
