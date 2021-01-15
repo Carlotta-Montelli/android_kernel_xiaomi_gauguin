@@ -718,6 +718,24 @@ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS   += -Os -march=armv8.1-a+crypto+fp16+rcpc
 else
 KBUILD_CFLAGS   += -O2 -march=armv8.1-a+crypto+fp16+rcpc
+KBUILD_AFLAGS   += -O2 -march=armv8.1-a+crypto+fp16+rcpc
+KBUILD_LDFLAGS  += -O2
+endif
+
+ifdef CONFIG_INLINE_OPTIMIZATION
+ifdef CONFIG_CC_IS_CLANG
+KBUILD_CFLAGS	+= -mllvm -inline-threshold=600
+KBUILD_CFLAGS	+= -mllvm -inlinehint-threshold=750
+else ifdef CONFIG_CC_IS_GCC
+KBUILD_CFLAGS	+= --param max-inline-insns-single=600
+KBUILD_CFLAGS	+= --param max-inline-insns-auto=750
+
+# We limit inlining to 5KB on the stack.
+KBUILD_CFLAGS	+= --param large-stack-frame=12288
+
+KBUILD_CFLAGS	+= --param inline-min-speedup=5
+KBUILD_CFLAGS	+= --param inline-unit-growth=60
+endif
 endif
 
 ifdef CONFIG_CC_WERROR
