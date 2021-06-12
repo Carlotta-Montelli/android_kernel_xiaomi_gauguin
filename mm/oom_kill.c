@@ -628,8 +628,6 @@ static void dump_header(struct oom_control *oc, struct task_struct *p)
 		show_mem(SHOW_MEM_FILTER_NODES, oc->nodemask);
 		if (is_dump_unreclaim_slabs())
 			dump_unreclaimable_slab();
-
-		show_mem_call_notifiers();
 	}
 
 	if (sysctl_oom_dump_tasks)
