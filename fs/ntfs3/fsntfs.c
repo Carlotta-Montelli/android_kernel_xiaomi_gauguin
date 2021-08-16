@@ -1887,7 +1887,7 @@ int ntfs_security_init(struct ntfs_sb_info *sbi)
 	struct ATTRIB *attr;
 	struct ATTR_LIST_ENTRY *le;
 	u64 sds_size;
-	size_t cnt, off;
+	size_t off;
 	struct NTFS_DE *ne;
 	struct NTFS_DE_SII *sii_e;
 	struct ntfs_fnd *fnd_sii = NULL;
@@ -1962,7 +1962,6 @@ int ntfs_security_init(struct ntfs_sb_info *sbi)
 	sbi->security.next_off =
 		Quad2Align(sds_size - SecurityDescriptorsBlockSize);
 
-	cnt = 0;
 	off = 0;
 	ne = NULL;
 
@@ -1980,8 +1979,6 @@ int ntfs_security_init(struct ntfs_sb_info *sbi)
 		next_id = le32_to_cpu(sii_e->sec_id) + 1;
 		if (next_id >= sbi->security.next_id)
 			sbi->security.next_id = next_id;
-
-		cnt += 1;
 	}
 
 	sbi->security.ni = ni;
