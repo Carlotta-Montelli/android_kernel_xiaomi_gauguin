@@ -1661,7 +1661,7 @@ static void authentic_work(struct work_struct *work)
 		retry_authentic++;
 		if (retry_authentic < AUTHENTIC_COUNT_MAX) {
 			ds_log("battery authentic work begin to restart.\n");
-			schedule_delayed_work(&ds28e16_data->authentic_work,
+			queue_delayed_work(system_power_efficient_wq, &ds28e16_data->authentic_work,
 				msecs_to_jiffies(authentic_period_ms));
 		}
 
@@ -1714,7 +1714,7 @@ static int ds28e16_probe(struct platform_device *pdev)
 	ds28e16_data->pdev = pdev;
 	platform_set_drvdata(pdev, ds28e16_data);
 	INIT_DELAYED_WORK(&ds28e16_data->authentic_work, authentic_work);
-
+	queue_delayed_work(system_power_efficient_wq, &ds28e16_data->authentic_work, msecs_to_jiffies(0));
 	retval = verify_psy_register(ds28e16_data);
 	if (retval) {
 		ds_err("Failed to verify_psy_register, err:%d\n", retval);
