@@ -1748,4 +1748,3 @@ exit_netlink:
 
 subsys_initcall(thermal_init);
 fs_initcall(thermal_netlink_init);
-module_exit(thermal_exit);
