@@ -724,13 +724,13 @@ static int qg_vbat_low_wa(struct qpnp_qg *chip)
 			if ((chip->kdata.fifo[i].v > (vbat_low_uv +
 					VBAT_LOW_HYST_UV)) && chip->vbat_low) {
 				chip->vbat_low = false;
-				pr_info("Exit VBAT_LOW vbat_avg=%duV vbat_low=%duV\n",
+				pr_debug("Exit VBAT_LOW vbat_avg=%duV vbat_low=%duV\n",
 					chip->kdata.fifo[i].v, vbat_low_uv);
 				break;
 			} else if ((chip->kdata.fifo[i].v < vbat_low_uv) &&
 							!chip->vbat_low) {
 				chip->vbat_low = true;
-				pr_info("Enter VBAT_LOW vbat_avg=%duV vbat_low=%duV\n",
+				pr_debug("Enter VBAT_LOW vbat_avg=%duV vbat_low=%duV\n",
 					chip->kdata.fifo[i].v, vbat_low_uv);
 				break;
 			}
@@ -3817,7 +3817,7 @@ done:
 	if (rc < 0)
 		pr_err("Failed to update sdam params rc=%d\n", rc);
 
-	pr_info("using %s @ PON ocv_uv=%duV soc=%d\n",
+	pr_debug("using %s @ PON ocv_uv=%duV soc=%d\n",
 			ocv_type, ocv_uv, chip->msoc);
 
 	/* SOC reporting is now ready */
@@ -5410,7 +5410,7 @@ static int qpnp_qg_probe(struct platform_device *pdev)
 
 	qg_get_battery_capacity(chip, &soc);
 
-	pr_info("QG initialized! battery_profile=%s SOC=%d QG_subtype=%d QG_version=%s QG_mode=%s\n",
+	pr_debug("QG initialized! battery_profile=%s SOC=%d QG_subtype=%d QG_version=%s QG_mode=%s\n",
 			qg_get_battery_type(chip), soc, chip->qg_subtype,
 			(chip->qg_version == QG_LITE) ? "QG_LITE" : "QG_PMIC5",
 			(chip->qg_mode == QG_V_I_MODE) ? "QG_V_I" : "QG_V");

@@ -32,7 +32,7 @@
 #define smblib_dbg(chg, reason, fmt, ...)			\
 	do {							\
 		if (*chg->debug_mask & (reason))		\
-			pr_info("%s: %s: " fmt, chg->name,	\
+			pr_debug("%s: %s: " fmt, chg->name,	\
 				__func__, ##__VA_ARGS__);	\
 		else						\
 			pr_debug("%s: %s: " fmt, chg->name,	\
@@ -234,7 +234,7 @@ static int set_uv_wa(struct smb_charger *chg, int a)
 		rc = power_supply_set_property(chg->usb_psy,
 				POWER_SUPPLY_PROP_UV_WA,
 				&pval);
-		pr_info("PD2.0 UV_WA %d\n", pval.intval);
+		pr_debug("PD2.0 UV_WA %d\n", pval.intval);
 	}
 
 	return rc;
@@ -1364,7 +1364,7 @@ void smblib_suspend_on_debug_battery(struct smb_charger *chg)
 		vote(chg->usb_icl_votable, DEBUG_BOARD_VOTER, val.intval, 0);
 		vote(chg->dc_suspend_votable, DEBUG_BOARD_VOTER, val.intval, 0);
 		if (val.intval)
-			pr_info("Input suspended: Fake battery\n");
+			pr_debug("Input suspended: Fake battery\n");
 	} else {
 		vote(chg->chg_disable_votable, DEBUG_BOARD_VOTER,
 					val.intval, 0);
@@ -2321,7 +2321,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
 		} else if (usb_online || vbus_now > 4000000) {
 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-			pr_info("vbus_now is %d, report charging\n", vbus_now);
+			pr_debug("vbus_now is %d, report charging\n", vbus_now);
 		} else {
 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
 		}
@@ -5902,7 +5902,7 @@ unsuspend_input:
 
 		smblib_rerun_apsd(chg);
 
-		pr_info("qc2_unsupported charger detected\n");
+		pr_debug("qc2_unsupported charger detected\n");
 		rc = smblib_force_vbus_voltage(chg, FORCE_5V_BIT);
 		if (rc < 0)
 			pr_err("Failed to force 5V\n");
