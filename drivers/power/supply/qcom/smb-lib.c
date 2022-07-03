@@ -29,7 +29,7 @@
 #define smblib_dbg(chg, reason, fmt, ...)			\
     do { } while (0)
 
-bool skip_thermal = false;
+bool skip_thermal = true;
 module_param(skip_thermal, bool, 0644);
 
 static bool is_secure(struct smb_charger *chg, int addr)
@@ -779,7 +779,7 @@ void smblib_suspend_on_debug_battery(struct smb_charger *chg)
 	vote(chg->usb_icl_votable, DEBUG_BOARD_VOTER, val.intval, 0);
 	vote(chg->dc_suspend_votable, DEBUG_BOARD_VOTER, val.intval, 0);
 	if (val.intval)
-		pr_info("Input suspended: Fake battery\n");
+		pr_debug("Input suspended: Fake battery\n");
 }
 
 int smblib_rerun_apsd_if_required(struct smb_charger *chg)

@@ -1435,7 +1435,7 @@ static int pl_disable_vote_callback(struct votable *votable,
 			return rc;
 
 		if (disable) {
-			pr_info("Parallel ICL is less than min ICL(%d), skipping parallel enable\n",
+			pr_debug("Parallel ICL is less than min ICL(%d), skipping parallel enable\n",
 					chip->pl_min_icl_ua);
 			return 0;
 		}
