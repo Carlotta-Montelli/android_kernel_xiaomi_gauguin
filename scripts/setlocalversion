@@ -16,9 +16,9 @@ usage() {
 }
 
 scm_only=false
-srctree=04a64675fb14
-android_release=android12
-kmi_generation=5
+srctree=
+android_release=
+kmi_generation=
 if test "$1" = "--save-scmversion"; then
 	scm_only=true
 	shift
