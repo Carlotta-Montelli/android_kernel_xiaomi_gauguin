@@ -1181,7 +1181,7 @@ static int verify_set_property(struct power_supply *psy,
 		DS28E16_cmd_decrementCounter();
 		break;
 	default:
-		ds_err("unsupported property %d\n", prop);
+		ds_dbg("unsupported property %d\n", prop);
 		return -ENODATA;
 	}
 
