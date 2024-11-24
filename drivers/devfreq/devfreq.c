@@ -1213,7 +1213,7 @@ static ssize_t polling_interval_store(struct device *dev,
 }
 static DEVICE_ATTR_RW(polling_interval);
 
-static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+static ssize_t __maybe_unused min_freq_store(struct device *dev, struct device_attribute *attr,
 			      const char *buf, size_t count)
 {
 	struct devfreq *df = to_devfreq(dev);
@@ -1296,7 +1296,7 @@ unlock:
 	mutex_unlock(&df->event_lock);
 	return ret;
 }
-static DEVICE_ATTR_RW(min_freq);
+static DEVICE_ATTR_RO(min_freq);
 
 static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
 			     char *buf)
