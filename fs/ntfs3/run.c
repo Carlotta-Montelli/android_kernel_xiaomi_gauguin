@@ -231,7 +231,7 @@ bool run_lookup_entry(const struct runs_tree *run, CLST vcn, CLST *lcn,
  */
 void run_truncate_head(struct runs_tree *run, CLST vcn)
 {
-	size_t index;
+	size_t index = 0;
 	struct ntfs_run *r;
 
 	if (run_lookup(run, vcn, &index)) {
@@ -1010,8 +1010,8 @@ int run_unpack_ex(struct runs_tree *run, struct ntfs_sb_info *sbi, CLST ino,
 		  u32 run_buf_size)
 {
 	int ret, err;
-	CLST next_vcn, lcn, len;
-	size_t index;
+	CLST next_vcn, lcn = 0, len = 0;
+	size_t index = 0;
 	bool ok;
 	struct wnd_bitmap *wnd;
 
