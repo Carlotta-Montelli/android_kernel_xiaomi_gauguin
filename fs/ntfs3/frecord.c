@@ -545,11 +545,11 @@ static int ni_repack(struct ntfs_inode *ni)
 	int err = 0;
 	struct ntfs_sb_info *sbi = ni->mi.sbi;
 	struct mft_inode *mi, *mi_p = NULL;
-	struct ATTRIB *attr = NULL, *attr_p;
+	struct ATTRIB *attr = NULL, *attr_p = NULL;
 	struct ATTR_LIST_ENTRY *le = NULL, *le_p;
 	CLST alloc = 0;
 	u8 cluster_bits = sbi->cluster_bits;
-	CLST svcn, evcn = 0, svcn_p, evcn_p, next_svcn;
+	CLST svcn, evcn = 0, svcn_p = 0, evcn_p = 0, next_svcn;
 	u32 roff, rs = sbi->record_size;
 	struct runs_tree run;
 
