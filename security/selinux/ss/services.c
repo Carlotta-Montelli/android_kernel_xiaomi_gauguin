@@ -1507,8 +1507,8 @@ static int security_context_to_sid_core(struct selinux_state *state,
 {
 	struct policydb *policydb;
 	struct sidtab *sidtab;
-	char scontext2_onstack[SZ_128] __aligned(sizeof(long));
-	char str_onstack[SZ_128] __aligned(sizeof(long));
+	char scontext2_onstack[SZ_256] __aligned(sizeof(long));
+	char str_onstack[SZ_256] __aligned(sizeof(long));
 	char *scontext2, *str = NULL;
 	struct context context;
 	int rc = 0;
@@ -1520,7 +1520,7 @@ static int security_context_to_sid_core(struct selinux_state *state,
 	/* Copy the string to allow changes and ensure a NUL terminator */
 	if (scontext_len < sizeof(scontext2_onstack)) {
 		scontext2 = scontext2_onstack;
-		memcpy(scontext2, scontext, scontext_len);
+		strncpy(scontext2, scontext, scontext_len);
 		scontext2[scontext_len] = '\0';
 	} else {
 		scontext2 = kmemdup_nul(scontext, scontext_len, gfp_flags);
@@ -1546,7 +1546,8 @@ static int security_context_to_sid_core(struct selinux_state *state,
 		/* Save another copy for storing in uninterpreted form */
 		if (scontext2 == scontext2_onstack) {
 			str = str_onstack;
-			memcpy(str, scontext2, scontext_len + 1);
+			strncpy(str, scontext2, scontext_len);
+			str[scontext_len] = '\0';
 		} else {
 			str = kstrdup(scontext2, gfp_flags);
 			if (!str) {
@@ -1562,7 +1563,7 @@ static int security_context_to_sid_core(struct selinux_state *state,
 				      &context, def_sid);
 	if (rc == -EINVAL && force) {
 		context.str = str;
-		context.len = scontext_len + 1;
+		context.len = scontext_len;
 		str = NULL;
 	} else if (rc)
 		goto out_unlock;
