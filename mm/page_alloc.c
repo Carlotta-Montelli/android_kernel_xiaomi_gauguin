@@ -330,7 +330,7 @@ int watermark_scale_factor = 30;
  * free memory, to make space for new workloads. Anyone can allocate
  * down to the min watermarks controlled by min_free_kbytes above.
  */
-int extra_free_kbytes = 0;
+int extra_free_kbytes = 4096;
 
 static unsigned long nr_kernel_pages __meminitdata;
 static unsigned long nr_all_pages __meminitdata;
