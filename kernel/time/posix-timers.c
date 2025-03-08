@@ -177,6 +177,7 @@ static int posix_timer_add(struct k_itimer *timer)
 			ret = -EAGAIN;
 		spin_unlock(&hash_lock);
 	} while (ret == -ENOENT);
+	cond_resched();
 	return ret;
 }
 
