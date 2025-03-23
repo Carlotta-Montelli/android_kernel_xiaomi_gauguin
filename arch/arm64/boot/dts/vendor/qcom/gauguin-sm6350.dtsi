@@ -1155,3 +1155,9 @@
 	panel = <&dsi_j17_36_02_0a_video
 		 &dsi_j17_42_02_0b_video>;
 };
+
+&thermal_zones {
+	quiet-therm-step {
+		status = "disabled";
+	};
+};
