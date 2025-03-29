@@ -49,7 +49,7 @@
 	__attribute__((__assume_aligned__(a, ## __VA_ARGS__)))
 
 #ifdef CONFIG_CFI_CLANG
-#define __nocfi		__attribute__((no_sanitize("cfi")))
+#define __nocfi		__attribute__((__no_sanitize__("cfi")))
 #endif
 
 #if __has_feature(shadow_call_stack)
