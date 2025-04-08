@@ -96,6 +96,7 @@ enum print_reason {
 #define NON_FFC_VFLOAT_VOTER            "NON_FFC_VFLOAT_VOTER"
 
 #define TYPEC_SWAP_VOTER		"TYPEC_SWAP_VOTER"
+#define BYPASS_VOTER			"BYPASS_VOTER"
 
 #define BOOST_BACK_STORM_COUNT	3
 #define WEAK_CHG_STORM_COUNT	8
