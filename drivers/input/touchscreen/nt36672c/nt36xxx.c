@@ -28,6 +28,7 @@
 #include <linux/input/mt.h>
 #include <linux/of_gpio.h>
 #include <linux/of_irq.h>
+#include "spi-xiaomi-tp.h"
 #include <linux/init.h>
 
 #include <linux/msm_drm_notify.h>
@@ -1609,7 +1610,7 @@ static int nvt_pinctrl_init(struct nvt_ts_data *nvt_data)
 {
 	int retval = 0;
 	/* Get pinctrl if target uses pinctrl */
-	nvt_data->ts_pinctrl = devm_pinctrl_get(&nvt_data->client->dev);
+	nvt_data->ts_pinctrl = devm_pinctrl_get(&nvt_data->pdev->dev);
 	NVT_LOG("%s Enter\n", __func__);
 	if (IS_ERR_OR_NULL(nvt_data->ts_pinctrl)) {
 		retval = PTR_ERR(nvt_data->ts_pinctrl);
@@ -1693,8 +1694,9 @@ Description:
 return:
 	Executive outcomes. 0---succeed. negative---failed
 *******************************************************/
-static int32_t nvt_ts_probe(struct spi_device *client)
+static int32_t nvt_ts_probe(struct platform_device *pdev)
 {
+	struct spi_device *ts_xsfer;
 	int32_t ret = 0;
 	int32_t retry = 0;
 
@@ -1715,15 +1717,40 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		return -ENOMEM;
 	}
 
+	ts->pdev = pdev;
+	for (retry = 1; retry <= 3; ++retry) {
+		ret = tmp_hold_ts_xsfer(&ts_xsfer);
+		if (ret < 0) {
+			if (ret == -EBUSY) {
+				NVT_ERR("tmp hold ts_xsfer failed, retry:%d\n", retry);
+				mdelay(100);
+				continue;
+			} else if (ret == -EPERM) {
+				NVT_ERR("ts_xsfer has been used, exit nvt probe\n");
+				goto err_get_spi;
+			} else if (ret == -EINVAL) {
+				NVT_ERR("ts_xsfer not exist, exit nvt probe\n");
+				goto err_get_spi;
+			}
+		} else {
+			break;
+		}
+	}
+	if (ret == -EBUSY) {
+		NVT_ERR("ts_xsfer always busy, exit nvt probe\n");
+		goto err_get_spi;
+	}
+
 	/* ---parse dts--- */
-	ret = nvt_parse_dt(&client->dev);
+	ret = nvt_parse_dt(&pdev->dev);
 	if (ret) {
 		NVT_ERR("parse dt error\n");
 		goto err_spi_setup;
 	}
 
-	ts->client = client;
-	spi_set_drvdata(client, ts);
+
+	ts->client = ts_xsfer;
+	spi_set_drvdata(ts->client, ts);
 
 	/* ---prepare for spi parameter--- */
 	if (ts->client->master->flags & SPI_MASTER_HALF_DUPLEX) {
@@ -1786,6 +1813,8 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 	}
 	NVT_LOG("finish check chip\n");
 
+	get_ts_xsfer(NVT_SPI_NAME);
+	tmp_drop_ts_xsfer();
 	ts->abs_x_max = TOUCH_DEFAULT_MAX_WIDTH;
 	ts->abs_y_max = TOUCH_DEFAULT_MAX_HEIGHT;
 	ts->input_dev = input_allocate_device();
@@ -1846,24 +1875,24 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_input_register_device_failed;
 	}
 
-	client->irq = gpio_to_irq(ts->irq_gpio);
-	if (client->irq) {
+	ts->client->irq = gpio_to_irq(ts->irq_gpio);
+	if (ts->client->irq) {
 		NVT_LOG("int_trigger_type=%d\n", ts->int_trigger_type);
 		ts->irq_enabled = true;
-		ret = request_threaded_irq(client->irq, NULL, nvt_ts_work_func,
+		ret = request_threaded_irq(ts->client->irq, NULL, nvt_ts_work_func,
 				ts->int_trigger_type | IRQF_ONESHOT, NVT_SPI_NAME, ts);
 		if (ret != 0) {
 			NVT_ERR("request irq failed. ret=%d\n", ret);
 			goto err_int_request_failed;
 		} else {
 			nvt_irq_enable(false);
-			NVT_LOG("request irq %d succeed\n", client->irq);
+			NVT_LOG("request irq %d succeed\n", ts->client->irq);
 		}
 	}
 
 	INIT_WORK(&ts->switch_mode_work, nvt_switch_mode_work);
 
-	pm_stay_awake(&client->dev);
+	pm_stay_awake(&ts->pdev->dev);
 	nvt_lockdown_wq = alloc_workqueue("nvt_lockdown_wq", WQ_UNBOUND | WQ_MEM_RECLAIM, 1);
 	if (!nvt_lockdown_wq) {
 		NVT_ERR("nvt_lockdown_wq create workqueue failed\n");
@@ -1986,11 +2015,11 @@ err_create_nvt_fwu_wq_failed:
 	}
 #endif
 err_create_nvt_lockdown_wq_failed:
-	pm_relax(&client->dev);
+	pm_relax(&ts->pdev->dev);
 #if WAKEUP_GESTURE
 	device_init_wakeup(&ts->input_dev->dev, 0);
 #endif
-	free_irq(client->irq, ts);
+	free_irq(ts->client->irq, ts);
 err_int_request_failed:
 	input_unregister_device(ts->input_dev);
 	ts->input_dev = NULL;
@@ -2007,7 +2036,9 @@ err_chipvertrim_failed:
 err_gpio_config_failed:
 err_spi_setup:
 err_ckeck_full_duplex:
-	spi_set_drvdata(client, NULL);
+	spi_set_drvdata(ts->client, NULL);
+err_get_spi:
+	tmp_drop_ts_xsfer();
 	if (ts->xbuf) {
 		kfree(ts->xbuf);
 		ts->xbuf = NULL;
@@ -2026,7 +2057,7 @@ Description:
 return:
 	Executive outcomes. 0---succeed.
 *******************************************************/
-static int32_t nvt_ts_remove(struct spi_device *client)
+static int32_t nvt_ts_remove(struct platform_device *pdev)
 {
 	NVT_LOG("Removing driver...\n");
 
@@ -2061,7 +2092,7 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 #endif
 
 	nvt_irq_enable(false);
-	free_irq(client->irq, ts);
+	free_irq(ts->client->irq, ts);
 
 	mutex_destroy(&ts->xbuf_lock);
 	mutex_destroy(&ts->lock);
@@ -2073,8 +2104,9 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 		ts->input_dev = NULL;
 	}
 
-	spi_set_drvdata(client, NULL);
+	spi_set_drvdata(ts->client, NULL);
 
+	put_ts_xsfer(NVT_SPI_NAME);
 	if (ts) {
 		kfree(ts);
 		ts = NULL;
@@ -2083,7 +2115,7 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 	return 0;
 }
 
-static void nvt_ts_shutdown(struct spi_device *client)
+static void nvt_ts_shutdown(struct platform_device *pdev)
 {
 	NVT_LOG("Shutdown driver...\n");
 
@@ -2353,7 +2385,7 @@ static const struct dev_pm_ops nvt_dev_pm_ops = {
 	.resume = nvt_pm_resume,
 };
 
-static const struct spi_device_id nvt_ts_id[] = {
+static const struct platform_device_id nvt_ts_id[] = {
 	{ NVT_SPI_NAME, 0 },
 	{ }
 };
@@ -2365,7 +2397,7 @@ static struct of_device_id nvt_match_table[] = {
 };
 #endif
 
-static struct spi_driver nvt_spi_driver = {
+static struct platform_driver nvt_driver = {
 	.probe		= nvt_ts_probe,
 	.remove		= nvt_ts_remove,
 	.shutdown	= nvt_ts_shutdown,
@@ -2416,10 +2448,10 @@ static int32_t __init nvt_driver_init(void)
 		return 0;
 	}
 
-	/* ---add spi driver--- */
-	ret = spi_register_driver(&nvt_spi_driver);
+	/* ---add platform driver--- */
+	ret = platform_driver_register(&nvt_driver);
 	if (ret) {
-		NVT_ERR("failed to add spi driver");
+		NVT_ERR("failed to add nvt touch driver");
 		goto err_driver;
 	}
 
@@ -2438,7 +2470,7 @@ return:
 ********************************************************/
 static void __exit nvt_driver_exit(void)
 {
-	spi_unregister_driver(&nvt_spi_driver);
+	platform_driver_unregister(&nvt_driver);
 }
 late_initcall(nvt_driver_init);
 
