@@ -3394,7 +3394,7 @@ static int qg_load_battery_profile(struct qpnp_qg *chip)
 					retry_batt_profile++;
 					pr_err("get page0 failed retry_batt_profile value = %d\n", retry_batt_profile);
 					if (retry_batt_profile < BATT_PROFILE_RETRY_COUNT_MAX)
-						schedule_delayed_work(&chip->qg_batterysecret_load_profile_work, msecs_to_jiffies(1500));
+						queue_delayed_work(system_power_efficient_wq, &chip->qg_batterysecret_load_profile_work, msecs_to_jiffies(1500));
 					else
 						profile_node = of_batterydata_get_best_profile(chip->batt_node, chip->batt_id_ohm / 1000, NULL);
 				}
@@ -3402,7 +3402,7 @@ static int qg_load_battery_profile(struct qpnp_qg *chip)
 				retry_batt_profile++;
 				pr_err("printk retry_batt_profile value = %d\n", retry_batt_profile);
 				if (retry_batt_profile < BATT_PROFILE_RETRY_COUNT_MAX)
-					schedule_delayed_work(&chip->qg_batterysecret_load_profile_work, msecs_to_jiffies(1500));
+					queue_delayed_work(system_power_efficient_wq, &chip->qg_batterysecret_load_profile_work, msecs_to_jiffies(1500));
 				else
 					profile_node = of_batterydata_get_best_profile(chip->batt_node, chip->batt_id_ohm / 1000, NULL);
 			}
@@ -3930,7 +3930,7 @@ static void qg_batterysecret_load_profile_work(struct work_struct *work)
 				if (rc < 0) {
 				pr_err("Error in restoring cycle_count, rc=%d\n", rc);
 				}
-				schedule_delayed_work(&chip->ttf->ttf_work, 10000);
+				queue_delayed_work(system_power_efficient_wq, &chip->ttf->ttf_work, 10000);
 
 				qg_determine_pon_soc(chip);
 				qg_post_init(chip);
