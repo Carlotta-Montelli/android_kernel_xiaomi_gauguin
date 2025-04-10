@@ -25,8 +25,8 @@
 									"IPA_CLIENT_APPS_WAN_CONS;wlan_pno_wl;wlan_deauth_rec_wl;" \
 									"wlan_auth_req_wl;wlan_ap_assoc_lost_wl;event1;event2;eventpoll;" \
 									"elliptic_wake_source;event5;bq2597x-standalone;wlan_roam_ho_wl;" \
-									"wlan_fw_rsp_wakelock;CHG_PLCY_MAIN_WL;fpc_ttw_wl;CHG_PLCY_CP_WL;smp2p-sleepstate"
+									"wlan_fw_rsp_wakelock;CHG_PLCY_MAIN_WL;fpc_ttw_wl;CHG_PLCY_CP_WL;smp2p-sleepstate;18800000.qcom,icnss"
 
-#define LENGTH_LIST_WL				1512
+#define LENGTH_LIST_WL				2560
 #define LENGTH_LIST_WL_DEFAULT		(strlen(LIST_WL_DEFAULT) + 1)
 #define LENGTH_LIST_WL_SEARCH		LENGTH_LIST_WL + LENGTH_LIST_WL_DEFAULT + 5
