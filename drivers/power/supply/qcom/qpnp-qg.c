@@ -4,7 +4,6 @@
  * Copyright (C) 2021 XiaoMi, Inc.
  */
 
-#define pr_fmt(fmt)	"QG-K: %s: " fmt, __func__
 
 #include <linux/debugfs.h>
 #include <linux/alarmtimer.h>
