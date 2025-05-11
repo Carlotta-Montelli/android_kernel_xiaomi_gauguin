@@ -3,7 +3,6 @@
  * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
  */
 
-#define pr_fmt(fmt)	"QG-K: %s: " fmt, __func__
 
 #include <linux/device.h>
 #include <linux/of.h>
