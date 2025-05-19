@@ -289,6 +289,7 @@ enum bpf_reg_type {
 	PTR_TO_TCP_SOCK,	 /* reg points to struct tcp_sock */
 	PTR_TO_TCP_SOCK_OR_NULL, /* reg points to struct tcp_sock or NULL */
 	PTR_TO_TP_BUFFER,	 /* reg points to a writable raw tp's buffer */
+	PTR_TO_XDP_SOCK,
 	PTR_TO_MEM = 21,		 /* reg points to valid memory region */
 	PTR_TO_MEM_OR_NULL = 22,	 /* reg points to valid memory region or NULL */
 };
