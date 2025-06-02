@@ -239,6 +239,28 @@ retry:
 		}
 	}
 
+	if (__need_migrate_cma_page(page, vma, address, flags)) {
+		pte_unmap_unlock(ptep, ptl);
+		if (__migrate_cma_pinpage(page, vma)) {
+			ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+		} else {
+			struct page *old_page = page;
+
+			migration_entry_wait(mm, pmd, address);
+			ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+			update_mmu_cache(vma, address, ptep);
+			pte = *ptep;
+			set_pte_at_notify(mm, address, ptep, pte);
+			page = vm_normal_page(vma, address, pte);
+			BUG_ON(!page);
+
+			pr_debug("cma: cma page %p[%#lx] migrated to new "
+					"page %p[%#lx]\n", old_page,
+					page_to_pfn(old_page),
+					page, page_to_pfn(page));
+		}
+	}
+
 	if (flags & FOLL_SPLIT && PageTransCompound(page)) {
 		int ret;
 		get_page(page);
