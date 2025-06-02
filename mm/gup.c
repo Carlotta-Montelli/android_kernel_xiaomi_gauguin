@@ -15,6 +15,7 @@
 #include <linux/rwsem.h>
 #include <linux/hugetlb.h>
 #include <linux/migrate.h>
+#include <linux/mmu_notifier.h>
 
 #include <asm/mmu_context.h>
 #include <asm/pgtable.h>
