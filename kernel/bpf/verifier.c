@@ -7418,6 +7418,43 @@ static void sanitize_dead_code(struct bpf_verifier_env *env)
 	}
 }
 
+static bool insn_is_cond_jump(u8 code)
+{
+	u8 op;
+
+	if (BPF_CLASS(code) == BPF_JMP32)
+		return true;
+
+	if (BPF_CLASS(code) != BPF_JMP)
+		return false;
+
+	op = BPF_OP(code);
+	return op != BPF_JA && op != BPF_EXIT && op != BPF_CALL;
+}
+
+static void opt_hard_wire_dead_code_branches(struct bpf_verifier_env *env)
+{
+	struct bpf_insn_aux_data *aux_data = env->insn_aux_data;
+	struct bpf_insn ja = BPF_JMP_IMM(BPF_JA, 0, 0, 0);
+	struct bpf_insn *insn = env->prog->insnsi;
+	const int insn_cnt = env->prog->len;
+	int i;
+
+	for (i = 0; i < insn_cnt; i++, insn++) {
+		if (!insn_is_cond_jump(insn->code))
+			continue;
+
+		if (!aux_data[i + 1].seen)
+			ja.off = insn->off;
+		else if (!aux_data[i + 1 + insn->off].seen)
+			ja.off = 0;
+		else
+			continue;
+
+		memcpy(insn, &ja, sizeof(ja));
+	}
+}
+
 /* convert load instructions that access fields of 'struct __sk_buff'
  * into sequence of instructions that access fields of 'struct sk_buff'
  */
@@ -8117,6 +8154,7 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	struct bpf_verifier_env *env;
 	struct bpf_verifier_log *log;
 	int ret = -EINVAL;
+	bool is_priv;
 
 	/* no program is valid */
 	if (ARRAY_SIZE(bpf_verifier_ops) == 0)
@@ -8164,6 +8202,9 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	if (attr->prog_flags & BPF_F_ANY_ALIGNMENT)
 		env->strict_alignment = false;
 
+	is_priv = capable(CAP_SYS_ADMIN);
+	env->allow_ptr_leaks = is_priv;
+
 	ret = replace_map_fd_with_map_ptr(env);
 	if (ret < 0)
 		goto skip_full_check;
@@ -8180,8 +8221,6 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	ret = -ENOMEM;
 	if (!env->explored_states)
 		goto skip_full_check;
-
-	env->allow_ptr_leaks = capable(CAP_SYS_ADMIN);
 
 	ret = check_cfg(env);
 	if (ret < 0)
@@ -8202,10 +8241,16 @@ skip_full_check:
 	free_states(env);
 
 	if (ret == 0)
-		sanitize_dead_code(env);
+		ret = check_max_stack_depth(env);
+
+	/* instruction rewrites happen after this point */
+	if (is_priv) {
+		if (ret == 0)
+			opt_hard_wire_dead_code_branches(env);
+	}
 
 	if (ret == 0)
-		ret = check_max_stack_depth(env);
+		sanitize_dead_code(env);
 
 	if (ret == 0)
 		/* program is valid, convert *(u32*)(ctx + off) accesses */
