@@ -52,12 +52,10 @@ fi
 
 UTS_VERSION="#$VERSION"
 CONFIG_ABI="$ARCH"
-CUSTOM_CC_VERSION="Furina clang version 21.0.0"
-CUSTOM_LD_VERSION="Furina LLD 21.0.0"
 CONFIG_FLAGS=""
 if [ -n "$SMP" ] ; then CONFIG_FLAGS="SMP"; fi
 if [ -n "$PREEMPT" ] ; then CONFIG_FLAGS="$CONFIG_FLAGS PREEMPT"; fi
-UTS_VERSION="$UTS_VERSION $CONFIG_FLAGS $TIMESTAMP $CONFIG_ABI"
+UTS_VERSION="$UTS_VERSION $CONFIG_FLAGS $TIMESTAMP"
 
 # Truncate to maximum length
 
@@ -73,12 +71,12 @@ UTS_TRUNCATE="cut -b -$UTS_LEN"
 
   echo \#define UTS_VERSION \"`echo $UTS_VERSION | $UTS_TRUNCATE`\"
 
-  echo \#define LINUX_COMPILE_BY \"`echo RasyidFurina | $UTS_TRUNCATE`\"
-  echo \#define LINUX_COMPILE_HOST \"`echo Fontaine-rev14-sm6350-platform | $UTS_TRUNCATE`\"
+  echo \#define LINUX_COMPILE_BY \"`echo $KBUILD_BUILD_USER | $UTS_TRUNCATE`\"
+  echo \#define LINUX_COMPILE_HOST \"`echo $KBUILD_BUILD_HOST | $UTS_TRUNCATE`\"
 
   LD_VERSION=$($LD -v | head -n1 | sed 's/(compatible with [^)]*)//' \
 		      | sed 's/[[:space:]]*$//')
-  printf '#define LINUX_COMPILER "%s"\n' "$CUSTOM_CC_VERSION, $CUSTOM_LD_VERSION"
+  printf '#define LINUX_COMPILER "%s"\n' "$CC_VERSION, $LD_VERSION"
 ) > .tmpcompile
 
 # Only replace the real compile.h if the new one is different,
