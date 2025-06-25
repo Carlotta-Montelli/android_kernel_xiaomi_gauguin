@@ -24,18 +24,18 @@ export TZ=Asia/Jakarta
 #export KBUILD_BUILD_VERSION=1
 #export KBUILD_BUILD_TIMESTAMP="Thu Jan 1 07:00:00 WIB 2023"
 export KBUILD_BUILD_HOST="Fontaine-rev14-sm6350-platform"
-export KERNELDIR="/workspaces/Manifest/kt"
+export KERNELDIR="/root/kernel/android_kernel_xiaomi_gauguin"
 export KERNELNAME="Furina"
 export SRCDIR="${KERNELDIR}"
 export OUTDIR="${KERNELDIR}/out"
 export ANYKERNEL="${KERNELDIR}/AnyKernel3"
-export DEFCONFIG="gauguin_defconfig"
+export DEFCONFIG="gauguin_ksu_defconfig"
 export ZIP_DIR="${KERNELDIR}/files"
 export IMAGE="${OUTDIR}/arch/arm64/boot/Image.gz"
 export DTBO="${OUTDIR}/arch/arm64/boot/dtbo.img"
 export ZIPNAME="${KERNELNAME}-Kernel-gauguin-$(date +%y%m%d-%H%M%S).zip"
 export FINAL_ZIP="${ZIP_DIR}/${ZIPNAME}"
-export TC_DIR="/workspaces/Manifest/furina-clang"
+export TC_DIR="/root/kernel/tool/proton-clang"
 export PATH="$TC_DIR/bin:$PATH"
 
 if [[ $1 = "-r" || $1 = "--regen" ]]; then

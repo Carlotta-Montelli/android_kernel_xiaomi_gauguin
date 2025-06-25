@@ -103,20 +103,20 @@ slow:
 }
 
 int ns_get_path_cb(struct path *path, ns_get_path_helper_t *ns_get_cb,
-		     void *private_data)
+                   void *private_data)
 {
-	struct ns_common *ns;
-	int *ret;
+    struct ns_common *ns;
+    int ret;
 
 again:
-	ns = ns_get_cb(private_data);
-	if (!ns)
-		return -ENOENT;
+    ns = ns_get_cb(private_data);
+    if (!ns)
+        return -ENOENT;
 
-	ret = __ns_get_path(path, ns);
-	if (IS_ERR(ret) && PTR_ERR(ret) == -EAGAIN)
-		goto again;
-	return ret;
+    ret = __ns_get_path(path, ns);
+    if (ret == -EAGAIN)
+        goto again;
+    return ret;
 }
 
 struct ns_get_path_task_args {
@@ -131,56 +131,56 @@ static struct ns_common *ns_get_path_task(void *private_data)
 	return args->ns_ops->get(args->task);
 }
 int ns_get_path(struct path *path, struct task_struct *task,
-		  const struct proc_ns_operations *ns_ops)
+                const struct proc_ns_operations *ns_ops)
 {
-	struct ns_get_path_task_args args = {
-		.ns_ops	= ns_ops,
-		.task	= task,
-	};
+    struct ns_get_path_task_args args = {
+        .ns_ops = ns_ops,
+        .task = task,
+    };
 
-	return ns_get_path_cb(path, ns_get_path_task, &args);
+    return ns_get_path_cb(path, ns_get_path_task, &args);
 }
 
 int open_related_ns(struct ns_common *ns,
-		   struct ns_common *(*get_ns)(struct ns_common *ns))
+                    struct ns_common *(*get_ns)(struct ns_common *ns))
 {
-	struct path path = {};
-	struct file *f;
-	int err;
-	int fd;
+    struct path path = {};
+    struct file *f;
+    int err;
+    int fd;
 
-	fd = get_unused_fd_flags(O_CLOEXEC);
-	if (fd < 0)
-		return fd;
+    fd = get_unused_fd_flags(O_CLOEXEC);
+    if (fd < 0)
+        return fd;
 
-	while (1) {
-		struct ns_common *relative;
+    while (1) {
+        struct ns_common *relative;
 
-		relative = get_ns(ns);
-		if (IS_ERR(relative)) {
-			put_unused_fd(fd);
-			return PTR_ERR(relative);
-		}
+        relative = get_ns(ns);
+        if (IS_ERR(relative)) {
+            put_unused_fd(fd);
+            return PTR_ERR(relative);
+        }
 
-		err = __ns_get_path(&path, relative);
-		if (IS_ERR(err) && PTR_ERR(err) == -EAGAIN)
-			continue;
-		break;
-	}
-	if (IS_ERR(err)) {
-		put_unused_fd(fd);
-		return err;
-	}
+        err = __ns_get_path(&path, relative);
+        if (err == -EAGAIN)
+            continue;
+        break;
+    }
+    if (err) {
+        put_unused_fd(fd);
+        return err;
+    }
 
-	f = dentry_open(&path, O_RDONLY, current_cred());
-	path_put(&path);
-	if (IS_ERR(f)) {
-		put_unused_fd(fd);
-		fd = PTR_ERR(f);
-	} else
-		fd_install(fd, f);
+    f = dentry_open(&path, O_RDONLY, current_cred());
+    path_put(&path);
+    if (IS_ERR(f)) {
+        put_unused_fd(fd);
+        return PTR_ERR(f);
+    }
+    fd_install(fd, f);
 
-	return fd;
+    return fd;
 }
 EXPORT_SYMBOL_GPL(open_related_ns);
 
