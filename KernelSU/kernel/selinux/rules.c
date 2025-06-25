@@ -36,14 +36,19 @@ static struct policydb *get_policydb(void)
 	return db;
 }
 
+static DEFINE_MUTEX(ksu_rules);
+
 void ksu_apply_kernelsu_rules()
 {
+	struct policydb *db;
+
 	if (!ksu_getenforce()) {
 		pr_info("SELinux permissive or disabled, apply rules!\n");
 	}
 
-	rcu_read_lock();
-	struct policydb *db = get_policydb();
+	mutex_lock(&ksu_rules);
+	
+	db = get_policydb();
 
 	ksu_permissive(db, KERNEL_SU_DOMAIN);
 	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
@@ -143,7 +148,7 @@ void ksu_apply_kernelsu_rules()
 	susfs_set_zygote_sid();
 #endif
 
-	rcu_read_unlock();
+	mutex_unlock(&ksu_rules);
 }
 
 #define MAX_SEPOL_LEN 128
