@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 4
 PATCHLEVEL = 19
-SUBLEVEL = 333
+SUBLEVEL = 334
 EXTRAVERSION =
 NAME = "People's Front"
 
@@ -303,7 +303,7 @@ include scripts/Kbuild.include
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
-KERNELVERSION = 5$(if 4,.4$(if 294,.294))
+KERNELVERSION = 5$(if 4,.4$(if 295,.295))
 export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
 
 include scripts/subarch.include
