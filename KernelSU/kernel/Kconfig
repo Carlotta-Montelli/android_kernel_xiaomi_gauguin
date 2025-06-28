@@ -54,7 +54,8 @@ config KPM
 	    Enabling this option will activate the KPM feature of SukiSU.
 	    This option is suitable for scenarios where you need to force KPM to be enabled.
 	    but it may affect system stability.
-
+      select KALLSYMS
+      select KALLSYMS_ALL
 menu "KernelSU - SUSFS"
 config KSU_SUSFS
     bool "KernelSU addon - SUSFS"
@@ -196,7 +197,5 @@ config KSU_SUSFS_SUS_SU
       - Mode 2: Enable sus_su, and disable ksu kprobe hooks for su, which means the kernel inline hooks are enabled,
                 the same as the su implementaion of non-gki kernel without kprobe supported.
       - Only apps with root access granted by ksu manager are allowed to get root.
-
-endmenu
 
 endmenu
