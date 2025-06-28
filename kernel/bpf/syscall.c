@@ -1540,7 +1540,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		return -E2BIG;
 
 	if (type == BPF_PROG_TYPE_KPROBE &&
-	    attr->kern_version != LINUX_VERSION_CODE)
+	    attr->kern_version != attr->kern_version)
 		return -EINVAL;
 
 	if (type != BPF_PROG_TYPE_SOCKET_FILTER &&
