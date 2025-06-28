@@ -199,3 +199,5 @@ config KSU_SUSFS_SUS_SU
       - Only apps with root access granted by ksu manager are allowed to get root.
 
 endmenu
+
+endmenu
