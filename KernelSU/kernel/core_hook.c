@@ -217,18 +217,23 @@ void ksu_escape_to_root(void)
 {
 	struct cred *cred;
 
+	if (current_euid().val == 0) {
+		pr_warn("Already root, don't escape!\n");
+		return;
+	}
+
 	rcu_read_lock();
 
 	do {
 		cred = (struct cred *)__task_cred((current));
-		BUG_ON(!cred);
+		if (!cred) {
+			pr_err("%s: cred is NULL! bailing out..\n", __func__);
+			rcu_read_unlock();
+			return;
+		}
 	} while (!get_cred_rcu(cred));
 
-	if (cred->euid.val == 0) {
-		pr_warn("Already root, don't escape!\n");
-		rcu_read_unlock();
-		return;
-	}
+	rcu_read_unlock();
 
 	struct root_profile *profile = ksu_get_root_profile(cred->uid.val);
 
@@ -259,8 +264,8 @@ void ksu_escape_to_root(void)
 	       sizeof(cred->cap_bset));
 
 	setup_groups(profile, cred);
-	
-	rcu_read_unlock();
+
+	put_cred(cred); // - release here - include/linux/cred.h
 
 	// Refer to kernel/seccomp.c: seccomp_set_mode_strict
 	// When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
@@ -399,6 +404,21 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		if (arg4 &&
 		    copy_to_user(arg4, &version_flags, sizeof(version_flags))) {
 			pr_err("prctl reply error, cmd: %lu\n", arg2);
+		}
+		return 0;
+	}
+
+	// Allow root manager to get full version strings
+	if (arg2 == CMD_GET_FULL_VERSION) {
+		char ksu_version_full[KSU_FULL_VERSION_STRING] = {0};
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+		strscpy(ksu_version_full, KSU_VERSION_FULL, KSU_FULL_VERSION_STRING);
+#else
+		strlcpy(ksu_version_full, KSU_VERSION_FULL, KSU_FULL_VERSION_STRING);
+#endif
+		if (copy_to_user((void __user *)arg3, ksu_version_full, KSU_FULL_VERSION_STRING)) {
+			pr_err("prctl reply error, cmd: %lu\n", arg2);
+			return -EFAULT;
 		}
 		return 0;
 	}
@@ -552,115 +572,26 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 	// Get SUSFS function status
 	if (arg2 == CMD_GET_SUSFS_FEATURE_STATUS) {
-		struct susfs_feature_status status;
-		
-		memset(&status, 0, sizeof(status));
-		
-		if (!ksu_access_ok((void __user*)arg3, sizeof(status))) {
-			pr_err("susfs_feature_status: arg3 is not accessible\n");
-			return 0;
-		}
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-		status.status_sus_path = true;
-#else
-		status.status_sus_path = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-		status.status_sus_mount = true;
-#else
-		status.status_sus_mount = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT
-		status.status_auto_default_mount = true;
-#else
-		status.status_auto_default_mount = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT
-		status.status_auto_bind_mount = true;
-#else
-		status.status_auto_bind_mount = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
-		status.status_sus_kstat = true;
-#else
-		status.status_sus_kstat = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
-		status.status_try_umount = true;
-#else
-		status.status_try_umount = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT
-		status.status_auto_try_umount_bind = true;
-#else
-		status.status_auto_try_umount_bind = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
-		status.status_spoof_uname = true;
-#else
-		status.status_spoof_uname = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
-		status.status_enable_log = true;
-#else
-		status.status_enable_log = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
-		status.status_hide_symbols = true;
-#else
-		status.status_hide_symbols = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
-		status.status_spoof_cmdline = true;
-#else
-		status.status_spoof_cmdline = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
-		status.status_open_redirect = true;
-#else
-		status.status_open_redirect = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT
-		status.status_magic_mount = true;
-#else
-		status.status_magic_mount = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SUS_OVERLAYFS
-		status.status_overlayfs_auto_kstat = true;
-#else
-		status.status_overlayfs_auto_kstat = false;
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SUS_SU
-		status.status_sus_su = true;
-#else
-		status.status_sus_su = false;
-#endif
-
-		if (copy_to_user((void __user*)arg3, &status, sizeof(status))) {
-			pr_err("susfs_feature_status: copy_to_user failed\n");
-			return 0;
-		}
-		
-		if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
-			pr_err("susfs_feature_status: prctl reply error\n");
-		}
-		
-		pr_info("susfs_feature_status: successfully returned feature status\n");
-		return 0;
+    	struct susfs_feature_status status;
+    
+    	if (!ksu_access_ok((void __user*)arg3, sizeof(status))) {
+        	pr_err("susfs_feature_status: arg3 is not accessible\n");
+        	return 0;
+    	}
+    
+    	init_susfs_feature_status(&status);
+    
+    	if (copy_to_user((void __user*)arg3, &status, sizeof(status))) {
+        	pr_err("susfs_feature_status: copy_to_user failed\n");
+        	return 0;
+    	}
+    
+    	if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+        	pr_err("susfs_feature_status: prctl reply error\n");
+    	}
+    
+    	pr_info("susfs_feature_status: successfully returned feature status\n");
+    	return 0;
 	}
 
 #ifdef CONFIG_KSU_SUSFS
@@ -1128,7 +1059,7 @@ static void ksu_sys_umount(const char *mnt, int flags)
 	char __user *usermnt = (char __user *)mnt;
 	mm_segment_t old_fs;
 	int ret; // although asmlinkage long
-	
+
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
@@ -1155,11 +1086,13 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 
 	if (path.dentry != path.mnt->mnt_root) {
 		// it is not root mountpoint, maybe umounted by others already.
+		path_put(&path);
 		return;
 	}
 
 	// we are only interest in some specific mounts
 	if (check_mnt && !should_umount(&path)) {
+		path_put(&path);
 		return;
 	}
 
@@ -1413,11 +1346,30 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 }
 
 #ifndef MODULE
+#ifndef KSU_HAS_DEVPTS_HANDLER
+extern int ksu_handle_devpts(struct inode *inode);
+static int ksu_inode_permission(struct inode *inode, int mask)
+{
+	if (unlikely(inode->i_sb && inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("%s: devpts inode accessed with mask: %x\n", __func__, mask);
+#endif
+		ksu_handle_devpts(inode);
+	}
+	return 0;
+}
+#endif
+
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
+#ifndef KSU_HAS_DEVPTS_HANDLER
+	LSM_HOOK_INIT(inode_permission, ksu_inode_permission),
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) ||	\
+	defined(CONFIG_IS_HW_HISI) ||	\
+	defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 	LSM_HOOK_INIT(key_permission, ksu_key_permission)
 #endif
 };

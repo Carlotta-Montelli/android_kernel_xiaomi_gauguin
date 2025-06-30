@@ -23,6 +23,9 @@
 #define CMD_UID_SHOULD_UMOUNT 13
 #define CMD_IS_SU_ENABLED 14
 #define CMD_ENABLE_SU 15
+
+#define CMD_GET_FULL_VERSION 30
+
 #define CMD_ENABLE_KPM 100
 #define CMD_HOOK_TYPE 101
 #define CMD_GET_SUSFS_FEATURE_STATUS 102
@@ -36,6 +39,12 @@
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
 #define KSU_MAX_GROUPS 32
 #define KSU_SELINUX_DOMAIN 64
+
+// SukiSU Ultra kernel su version full strings
+#ifndef KSU_VERSION_FULL 
+#define KSU_VERSION_FULL "v3.x-00000000@unknown"
+#endif
+#define KSU_FULL_VERSION_STRING 255
 
 // SUSFS Functional State Structures
 struct susfs_feature_status {
@@ -55,6 +64,37 @@ struct susfs_feature_status {
 	bool status_overlayfs_auto_kstat;
 	bool status_sus_su;
 };
+
+struct susfs_config_map {
+    bool *status_field;
+    bool is_enabled;
+};
+
+#define SUSFS_FEATURE_CHECK(config, field) \
+    do { \
+        status->field = IS_ENABLED(config); \
+    } while(0)
+
+static inline void init_susfs_feature_status(struct susfs_feature_status *status) 
+{
+    memset(status, 0, sizeof(*status));
+    
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_PATH, status_sus_path);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_MOUNT, status_sus_mount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT, status_auto_default_mount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT, status_auto_bind_mount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_KSTAT, status_sus_kstat);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_TRY_UMOUNT, status_try_umount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT, status_auto_try_umount_bind);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SPOOF_UNAME, status_spoof_uname);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_ENABLE_LOG, status_enable_log);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS, status_hide_symbols);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG, status_spoof_cmdline);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_OPEN_REDIRECT, status_open_redirect);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT, status_magic_mount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_OVERLAYFS, status_overlayfs_auto_kstat);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_SU, status_sus_su);
+}
 
 struct root_profile {
 	int32_t uid;
