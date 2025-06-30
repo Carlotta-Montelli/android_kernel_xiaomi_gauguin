@@ -33,6 +33,7 @@ static struct apk_sign_key {
 #ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
 	{EXPECTED_SIZE_RSUNTK, EXPECTED_HASH_RSUNTK}, // RKSU
 	{EXPECTED_SIZE_NEKO, EXPECTED_HASH_NEKO}, // Neko/KernelSU
+	{EXPECTED_SIZE_XIAOQ, EXPECTED_HASH_XIAOQ}, // XiaoQ/kernelSU
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 	{EXPECTED_SIZE_5EC1CFF, EXPECTED_HASH_5EC1CFF}, // MKSU
 	{EXPECTED_SIZE_WEISHU, EXPECTED_HASH_WEISHU}, // KSU
@@ -114,7 +115,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset)
 			continue;
 		*offset += *size4;
 
-#define CERT_MAX_LENGTH 1024
+#define CERT_MAX_LENGTH 2048
 		char cert[CERT_MAX_LENGTH];
 		if (*size4 > CERT_MAX_LENGTH) {
 			pr_info("cert length overlimit\n");
