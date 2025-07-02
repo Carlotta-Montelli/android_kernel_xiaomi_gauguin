@@ -140,6 +140,18 @@ config DEVFREQ_GOV_QCOM_ADRENO_TZ
 	   governor is unlikely to be useful for other
 	   devices.
 
+if DEVFREQ_GOV_QCOM_ADRENO_TZ
+
+config ADRENO_INPUT_BOOST_FREQ
+	int "Adreno Input Boost Frequency (KHz)"
+	default "0"
+
+config ADRENO_INPUT_BOOST_DURATION
+	int "Adreno Input Boost Duration (ms)"
+	default "0"
+
+endif
+
 config DEVFREQ_GOV_QCOM_GPUBW_MON
 	tristate "GPU BW voting governor"
 	depends on DEVFREQ_GOV_QCOM_ADRENO_TZ
