@@ -466,6 +466,8 @@ static const char * const reg_type_str[] = {
 	[PTR_TO_XDP_SOCK]	= "xdp_sock",
 	[PTR_TO_BTF_ID]		= "ptr_",
 	[PTR_TO_BTF_ID_OR_NULL]	= "ptr_or_null_",
+	[PTR_TO_MEM]            = "mem",
+	[PTR_TO_MEM_OR_NULL]    = "mem_or_null",
 };
 
 static void print_liveness(struct bpf_verifier_env *env,
