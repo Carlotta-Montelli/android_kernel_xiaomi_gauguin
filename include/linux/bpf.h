@@ -324,6 +324,10 @@ enum bpf_reg_type {
 	PTR_TO_BTF_ID_OR_NULL,	 /* reg points to kernel struct or NULL */
 	PTR_TO_MEM = 21,		 /* reg points to valid memory region */
 	PTR_TO_MEM_OR_NULL = 22,	 /* reg points to valid memory region or NULL */
+	PTR_TO_RDONLY_BUF = 23,	 /* reg points to a readonly buffer */
+	PTR_TO_RDONLY_BUF_OR_NULL = 24, /* reg points to a readonly buffer or NULL */
+	PTR_TO_RDWR_BUF = 25,	 /* reg points to a read/write buffer */
+	PTR_TO_RDWR_BUF_OR_NULL = 26, /* reg points to a read/write buffer or NULL */
 };
 
 /* The information passed from prog-specific *_is_valid_access
@@ -394,6 +398,12 @@ enum bpf_cgroup_storage_type {
 };
 #define MAX_BPF_CGROUP_STORAGE_TYPE __BPF_CGROUP_STORAGE_MAX
 
+struct bpf_ctx_arg_aux {
+    u32 offset;
+    enum bpf_reg_type reg_type;
+    u32 btf_id;
+};
+
 struct bpf_prog_aux {
 	atomic_t refcnt;
 	u32 used_map_cnt;
@@ -404,7 +414,11 @@ struct bpf_prog_aux {
 	bool offload_requested;
 	u32 func_cnt; /* used by non-func prog as the number of func progs */
 	u32 func_idx; /* 0 for non-func prog, the index in func array for func prog */
+	u32 ctx_arg_info_size;
+	u32 max_rdonly_access;
+	u32 max_rdwr_access;
 	u32 attach_btf_id; /* in-kernel BTF type id to attach to */
+	const struct bpf_ctx_arg_aux *ctx_arg_info;
 	bool btf_id_or_null_non0_off;
 	struct bpf_prog **func;
 	void *jit_data; /* JIT specific data. arch dependent */
