@@ -260,6 +260,16 @@ struct bpf_func_proto {
 		};
 		enum bpf_arg_type arg_type[5];
 	};
+    union {
+        struct {
+            u32 *arg1_btf_id;
+            u32 *arg2_btf_id;
+            u32 *arg3_btf_id;
+            u32 *arg4_btf_id;
+            u32 *arg5_btf_id;
+        };
+        u32 *arg_btf_id[5];
+    };
 	u32 *btf_id; /* BTF ids of arguments */
 	bool (*check_btf_id)(u32 btf_id, u32 arg); /* if the argument btf_id is
 						    * valid. Often used if more
