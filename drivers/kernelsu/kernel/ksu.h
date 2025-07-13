@@ -81,6 +81,7 @@ struct susfs_feature_status {
 	bool status_spoof_cmdline;
 	bool status_open_redirect;
 	bool status_magic_mount;
+	bool status_overlayfs_auto_kstat;
 	bool status_sus_su;
 };
 
@@ -111,6 +112,7 @@ static inline void init_susfs_feature_status(struct susfs_feature_status *status
     SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG, status_spoof_cmdline);
     SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_OPEN_REDIRECT, status_open_redirect);
     SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT, status_magic_mount);
+    SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_OVERLAYFS, status_overlayfs_auto_kstat);
     SUSFS_FEATURE_CHECK(CONFIG_KSU_SUSFS_SUS_SU, status_sus_su);
 }
 
