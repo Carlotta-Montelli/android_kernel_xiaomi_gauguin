@@ -51,14 +51,13 @@ config PSTORE_842_COMPRESS
 
 config PSTORE_ZSTD_COMPRESS
 	bool "zstd compression"
-	default y
 	depends on PSTORE
 	select CRYPTO_ZSTD
 	help
 	  This option enables zstd compression algorithm support.
 
 config PSTORE_COMPRESS
-	def_bool y
+	def_bool n
 	depends on PSTORE
 	depends on PSTORE_DEFLATE_COMPRESS || PSTORE_LZO_COMPRESS ||	\
 		   PSTORE_LZ4_COMPRESS || PSTORE_LZ4HC_COMPRESS ||	\
