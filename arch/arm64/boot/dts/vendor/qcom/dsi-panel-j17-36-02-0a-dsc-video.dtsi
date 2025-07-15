@@ -55,14 +55,6 @@
 		qcom,mdss-dsi-panel-blackness-level = <3230>;
 		qcom,mdss-dsi-qsync-min-refresh-rate = <60>;
 
-		qcom,mdss-dsi-pan-enable-dynamic-fps;
-		qcom,mdss-dsi-pan-fps-update =
-			"dfps_immediate_porch_mode_vfp";
-		qcom,dsi-supported-dfps-list = <120 90 60 50 48 30>;
-		qcom,dsi-dyn-clk-enable;
-		qcom,dsi-dyn-clk-type = "constant-fps-adjust-hfp";
-		qcom,dsi-dyn-clk-list = <819957600 835930800>;
-
 		qcom,mdss-dsi-display-timings {
 			timing@0{
 				qcom,mdss-dsi-panel-framerate = <120>;
@@ -248,12 +240,7 @@
 	mi,mdss-dsi-panel-status-value-ignore;
 	mi,esd-check-interval = <3000>;
 	mi,mdss-panel-idle-time = <1100>;
-	mi,mdss-panel-idle-fps = <50>;
-	mi,mdss-dsi-dfps-preferred-fps-index = <2>; /* 60 fps */
-	mi,mdss-dsi-dfps-dec-vfp-list = <20 0 20 0 0 0
-		0 0 0 0 0 0>;
-	mi,mdss-dsi-dfps-dec-hfp-list = <0 0 0 0 0 0
-		4 0 4 0 0 0>;
+	mi,mdss-panel-idle-fps = <60>;
 	mi,mdss-dsi-post-off-msleep = <20>;
 
 	qcom,mdss-dsi-display-timings {
