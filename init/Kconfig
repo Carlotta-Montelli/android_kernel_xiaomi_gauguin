@@ -50,6 +50,14 @@ config LLD_VERSION
 config CC_HAS_ASM_GOTO
 	def_bool $(success,$(srctree)/scripts/gcc-goto.sh $(CC))
 
+config BRANCH_NAME
+	string
+	default $(shell,git rev-parse --abbrev-ref HEAD)
+
+config LAST_COMMIT
+	string
+	default $(shell,git rev-parse --verify --short=10 HEAD)
+
 config CONSTRUCTORS
 	bool
 	depends on !UML
@@ -69,6 +77,15 @@ config THREAD_INFO_IN_TASK
 
 	  One subtle change that will be needed is to use try_get_task_stack()
 	  and put_task_stack() in save_thread_stack_tsk() and get_wchan().
+
+config LOCALVERSION_BRANCH_SHA
+	bool "Leave only branch name and current tree"
+	default n
+	depends on LOCALVERSION_AUTO
+	depends on !COMPILE_TEST
+	help
+	  A cleaner version of LOCALVERSION_AUTO, contains branch name
+	  and current tree.
 
 menu "General setup"
 

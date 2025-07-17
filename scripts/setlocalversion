@@ -98,7 +98,7 @@ scm_version()
 			# If we don't have a tag at all we print -g{commitish},
 			# again using exactly 12 hex chars.
 			else
-				head="$(echo $head | cut -c1-12)"
+				head="$(echo $head | cut -c1-7)"
 				printf '%s%s' -g $head
 			fi
 		fi
@@ -198,7 +198,7 @@ if test ! "$srctree" -ef .; then
 fi
 
 # CONFIG_LOCALVERSION and LOCALVERSION (if set)
-res="${res}${CONFIG_LOCALVERSION}${LOCALVERSION}"
+res="${res}-${CONFIG_BRANCH_NAME}-${CONFIG_LAST_COMMIT}${CONFIG_LOCALVERSION}${LOCALVERSION}"
 
 # scm version string if not at a tagged commit
 if test "$CONFIG_LOCALVERSION_AUTO" = "y"; then
