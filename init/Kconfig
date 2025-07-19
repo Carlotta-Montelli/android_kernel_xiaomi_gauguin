@@ -94,6 +94,10 @@ config LAST_COMMIT
 	string
 	default $(shell,git rev-parse --verify --short=10 HEAD)
 
+config BUILD_NUMBER
+	string
+	default $(shell,cat .version 2>/dev/null || echo 1)
+
 config CONSTRUCTORS
 	bool
 	depends on !UML
