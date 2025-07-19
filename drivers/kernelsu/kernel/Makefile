@@ -43,7 +43,7 @@ ifeq ($(KSU_GITHUB_VERSION_COMMIT),)
     KSU_VERSION := $(shell expr 10000 + $(KSU_LOCAL_VERSION) + 700)
     $(info -- $(REPO_NAME) version (local .git): $(KSU_VERSION))
   else
-    KSU_VERSION := 13000
+    KSU_VERSION := 13400
     $(warning -- Could not fetch version online or via local .git! Using fallback version: $(KSU_VERSION))
   endif
 else

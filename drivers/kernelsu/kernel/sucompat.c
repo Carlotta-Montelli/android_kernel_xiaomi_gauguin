@@ -30,9 +30,13 @@
 
 extern void ksu_escape_to_root();
 
+static const char sh_path[] = "/system/bin/sh";
+static const char ksud_path[] = KSUD_PATH;
+static const char su[] = SU_PATH;
+
 bool ksu_sucompat_hook_state __read_mostly = true;
 
-static void __user *userspace_stack_buffer(const void *d, size_t len)
+static inline void __user *userspace_stack_buffer(const void *d, size_t len)
 {
 	/* To avoid having to mmap a page in userspace, just write below the stack
    * pointer. */
@@ -41,17 +45,13 @@ static void __user *userspace_stack_buffer(const void *d, size_t len)
 	return copy_to_user(p, d, len) ? NULL : p;
 }
 
-static char __user *sh_user_path(void)
+static inline char __user *sh_user_path(void)
 {
-	static const char sh_path[] = "/system/bin/sh";
-
 	return userspace_stack_buffer(sh_path, sizeof(sh_path));
 }
 
-static char __user *ksud_user_path(void)
+static inline char __user *ksud_user_path(void)
 {
-	static const char ksud_path[] = KSUD_PATH;
-
 	return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
@@ -59,20 +59,24 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 			 int *__unused_flags)
 {
 
-	const char su[] = SU_PATH;
-
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_hook_state) {
 		return 0;
 	}
 #endif
 
+#ifndef CONFIG_KSU_SUSFS_SUS_SU
 	if (!ksu_is_allow_uid(current_uid().val)) {
 		return 0;
 	}
+#endif
 
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	char path[sizeof(su)] = {0};
+#else
 	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
+#endif
 	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
@@ -85,15 +89,9 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && defined(CONFIG_KSU_SUSFS_SUS_SU)
 struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags) {
-	// const char sh[] = SH_PATH;
-	const char su[] = SU_PATH;
 	struct filename *name = getname_flags(*filename_user, getname_statx_lookup_flags(*flags), NULL);
 
 	if (unlikely(IS_ERR(name) || name->name == NULL)) {
-		return name;
-	}
-
-	if (!ksu_is_allow_uid(current_uid().val)) {
 		return name;
 	}
 
@@ -110,8 +108,6 @@ struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_us
 
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
-	// const char sh[] = SH_PATH;
-	const char su[] = SU_PATH;
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_hook_state) {
@@ -119,16 +115,22 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	}
 #endif
 
+#ifndef CONFIG_KSU_SUSFS_SUS_SU
 	if (!ksu_is_allow_uid(current_uid().val)) {
 		return 0;
 	}
+#endif
 
 	if (unlikely(!filename_user)) {
 		return 0;
 	}
 
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	char path[sizeof(su)] = {0};
+#else
 	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
+#endif
 // Remove this later!! we use syscall hook, so this will never happen!!!!!
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0) && 0
 	// it becomes a `struct filename *` after 5.18
@@ -160,8 +162,6 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				 int *__never_use_flags)
 {
 	struct filename *filename;
-	const char sh[] = KSUD_PATH;
-	const char su[] = SU_PATH;
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_hook_state) {
@@ -180,11 +180,13 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (likely(memcmp(filename->name, su, sizeof(su))))
 		return 0;
 
+#ifndef CONFIG_KSU_SUSFS_SUS_SU
 	if (!ksu_is_allow_uid(current_uid().val))
 		return 0;
+#endif
 
 	pr_info("do_execveat_common su found\n");
-	memcpy((void *)filename->name, sh, sizeof(sh));
+	memcpy((void *)filename->name, ksud_path, sizeof(ksud_path));
 
 	ksu_escape_to_root();
 
@@ -195,8 +197,12 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 			       void *__never_use_argv, void *__never_use_envp,
 			       int *__never_use_flags)
 {
-	const char su[] = SU_PATH;
+	//const char su[] = SU_PATH;
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	char path[sizeof(su)] = {0};
+#else
 	char path[sizeof(su) + 1];
+#endif
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_hook_state) {
@@ -223,7 +229,6 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	long len = strncpy_from_user(path, *filename_user, sizeof(path));
 	if (len <= 0 || len > sizeof(path))
 		return 0;
-
 	// strncpy_from_user_nofault does this too
 	path[sizeof(path) - 1] = '\0';
 

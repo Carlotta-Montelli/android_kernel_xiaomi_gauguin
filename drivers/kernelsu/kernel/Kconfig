@@ -61,6 +61,7 @@ menu "KernelSU - SUSFS"
 config KSU_SUSFS
     bool "KernelSU addon - SUSFS"
     depends on KSU
+    depends on THREAD_INFO_IN_TASK
     default y
     help
       Patch and Enable SUSFS to kernel with KernelSU.
@@ -119,16 +120,6 @@ config KSU_SUSFS_SUS_KSTAT
     help
       - Allow spoofing the kstat of user-defined file/directory.
       - Effective only on zygote spawned user app process.
-
-config KSU_SUSFS_SUS_OVERLAYFS
-    bool "Enable to automatically spoof kstat and kstatfs for overlayed files/directories"
-    depends on KSU_SUSFS
-    default n
-    help
-      - Automatically spoof the kstat and kstatfs for overlayed files/directories.
-      - Enable it if you are using legacy KernelSU and dont have auto hide features enabled.
-      - No susfs command is needed in userspace.
-      - Effective on all processes.
 
 config KSU_SUSFS_TRY_UMOUNT
     bool "Enable to use ksu's ksu_try_umount"
