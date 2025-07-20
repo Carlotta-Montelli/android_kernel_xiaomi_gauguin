@@ -763,7 +763,7 @@ static void gpu_boost_worker(struct work_struct *work)
 
 	gpu_update_devfreq(devfreq);
 
-	schedule_delayed_work(&unboost_work, msecs_to_jiffies(boost_duration));
+	queue_delayed_work(system_power_efficient_wq, &unboost_work, msecs_to_jiffies(boost_duration));
 }
 
 static void gpu_unboost_worker(struct work_struct *work)
@@ -799,7 +799,7 @@ static void gpu_ib_input_event(struct input_handle *handle,
 
 	if (gpu_boost_running) {
 		if (cancel_delayed_work_sync(&unboost_work)) {
-			schedule_delayed_work(&unboost_work,
+			queue_delayed_work(system_power_efficient_wq, &unboost_work,
 				msecs_to_jiffies(boost_duration));
 			return;
 		}
