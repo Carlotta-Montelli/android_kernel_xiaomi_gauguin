@@ -1552,7 +1552,7 @@ int DWC_ETH_QOS_add_ipv6addr(struct DWC_ETH_QOS_prv_data *pdata)
 
 	if (!net->ipv6.devconf_dflt) {
 		EMACDBG("ipv6.devconf_dflt is null, schedule wq\n");
-		schedule_delayed_work(&pdata->ipv6_addr_assign_wq, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, &pdata->ipv6_addr_assign_wq, msecs_to_jiffies(1000));
 		return -EFAULT;
 	}
 
@@ -1890,7 +1890,7 @@ static int DWC_ETH_QOS_configure_netdevice(struct platform_device *pdev)
 			INIT_DELAYED_WORK(&pdata->ipv6_addr_assign_wq, is_ipv6_NW_stack_ready);
 			ret = DWC_ETH_QOS_add_ipv6addr(pdata);
 			if (ret)
-				schedule_delayed_work(&pdata->ipv6_addr_assign_wq, msecs_to_jiffies(1000));
+				queue_delayed_work(system_power_efficient_wq, &pdata->ipv6_addr_assign_wq, msecs_to_jiffies(1000));
 		}
 
 	}

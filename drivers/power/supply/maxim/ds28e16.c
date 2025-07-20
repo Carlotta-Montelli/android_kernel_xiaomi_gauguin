@@ -1730,7 +1730,7 @@ static int ds28e16_probe(struct platform_device *pdev)
 	retval = power_supply_get_property(ds28e16_data->verify_psy,
 					POWER_SUPPLY_PROP_AUTHEN_RESULT, &b_val);
 	if (b_val.intval != true) {
-		schedule_delayed_work(&ds28e16_data->authentic_work,
+		queue_delayed_work(system_power_efficient_wq, &ds28e16_data->authentic_work,
 				msecs_to_jiffies(0));
 	}
 	return 0;

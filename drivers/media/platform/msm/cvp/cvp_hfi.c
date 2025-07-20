@@ -2210,7 +2210,7 @@ static void dsp_init_work_handler(struct work_struct *work)
 		dprintk(CVP_PROF, "%s: Attempt to init DSP %d\n",
 			__func__, retry_count);
 
-		schedule_delayed_work(&device->dsp_init_work,
+		queue_delayed_work(system_power_efficient_wq, &device->dsp_init_work,
 				msecs_to_jiffies(CVP_MAX_WAIT_TIME));
 		++retry_count;
 	}
@@ -2309,7 +2309,7 @@ static int iris_hfi_core_init(void *device)
 
 	rc = __dsp_send_hfi_queue(device);
 	if (rc)
-		schedule_delayed_work(&dev->dsp_init_work,
+		queue_delayed_work(system_power_efficient_wq, &dev->dsp_init_work,
 				msecs_to_jiffies(CVP_MAX_WAIT_TIME));
 
 	dprintk(CVP_DBG, "Core inited successfully\n");

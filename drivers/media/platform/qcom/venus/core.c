@@ -56,7 +56,7 @@ static void venus_event_notify(struct venus_core *core, u32 event)
 	 * operations. Without this sleep, we see device reset when firmware is
 	 * unloaded after a system error.
 	 */
-	schedule_delayed_work(&core->work, msecs_to_jiffies(100));
+	queue_delayed_work(system_power_efficient_wq, &core->work, msecs_to_jiffies(100));
 }
 
 static const struct hfi_core_ops venus_core_ops = {
@@ -99,7 +99,7 @@ static void venus_sys_error_handler(struct work_struct *work)
 	if (ret) {
 		disable_irq_nosync(core->irq);
 		dev_warn(core->dev, "recovery failed (%d)\n", ret);
-		schedule_delayed_work(&core->work, msecs_to_jiffies(10));
+		queue_delayed_work(system_power_efficient_wq, &core->work, msecs_to_jiffies(10));
 		return;
 	}
 

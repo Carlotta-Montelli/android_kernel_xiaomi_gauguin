@@ -1139,7 +1139,7 @@ int msm_cvp_deinit_core(struct msm_cvp_inst *inst)
 		 * in avoiding firmware download delays in cases where we
 		 * will have a burst of back to back cvp sessions
 		 */
-		schedule_delayed_work(&core->fw_unload_work,
+		queue_delayed_work(system_power_efficient_wq, &core->fw_unload_work,
 			msecs_to_jiffies(core->state == CVP_CORE_INIT_DONE ?
 			core->resources.msm_cvp_firmware_unload_delay : 0));
 

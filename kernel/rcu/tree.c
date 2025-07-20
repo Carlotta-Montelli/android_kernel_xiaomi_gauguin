@@ -3362,7 +3362,7 @@ static inline void kfree_rcu_drain_unlock(struct kfree_rcu_cpu *krcp,
 
 	// Previous RCU batch still in progress, try again later.
 	krcp->monitor_todo = true;
-	schedule_delayed_work(&krcp->monitor_work, KFREE_DRAIN_JIFFIES);
+	queue_delayed_work(system_power_efficient_wq, &krcp->monitor_work, KFREE_DRAIN_JIFFIES);
 	raw_spin_unlock_irqrestore(&krcp->lock, flags);
 }
 
@@ -3544,7 +3544,7 @@ void kvfree_call_rcu(struct rcu_head *head, rcu_callback_t func)
 	if (rcu_scheduler_active == RCU_SCHEDULER_RUNNING &&
 	    !krcp->monitor_todo) {
 		krcp->monitor_todo = true;
-		schedule_delayed_work(&krcp->monitor_work, KFREE_DRAIN_JIFFIES);
+		queue_delayed_work(system_power_efficient_wq, &krcp->monitor_work, KFREE_DRAIN_JIFFIES);
 	}
 
 unlock_return:
@@ -3627,7 +3627,7 @@ void __init kfree_rcu_scheduler_running(void)
 			continue;
 		}
 		krcp->monitor_todo = true;
-		schedule_delayed_work_on(cpu, &krcp->monitor_work,
+		queue_delayed_work(system_power_efficient_wq, &krcp->monitor_work,
 					 KFREE_DRAIN_JIFFIES);
 		raw_spin_unlock_irqrestore(&krcp->lock, flags);
 	}

@@ -399,7 +399,7 @@ static void thermal_emergency_poweroff(void)
 	 */
 	if (poweroff_delay_ms <= 0)
 		return;
-	schedule_delayed_work(&thermal_emergency_poweroff_work,
+	queue_delayed_work(system_power_efficient_wq, &thermal_emergency_poweroff_work,
 			      msecs_to_jiffies(poweroff_delay_ms));
 }
 

@@ -823,7 +823,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 
 	if ((panel->mi_cfg.bl_last_level == 0 || (mi_cfg->skip_dimmingon == STATE_DIM_RESTORE)) && bl_lvl) {
 		if (panel->mi_cfg.panel_on_dimming_delay)
-			schedule_delayed_work(&panel->mi_cfg.cmds_work,
+			queue_delayed_work(system_power_efficient_wq, &panel->mi_cfg.cmds_work,
 				msecs_to_jiffies(panel->mi_cfg.panel_on_dimming_delay));
 
 		if (mi_cfg->skip_dimmingon == STATE_DIM_RESTORE)

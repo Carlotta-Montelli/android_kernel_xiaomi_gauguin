@@ -202,7 +202,7 @@ static void update_writeback_rate(struct work_struct *work)
 	 */
 	if (test_bit(BCACHE_DEV_WB_RUNNING, &dc->disk.flags) &&
 	    !test_bit(CACHE_SET_IO_DISABLE, &c->flags)) {
-		schedule_delayed_work(&dc->writeback_rate_update,
+		queue_delayed_work(system_power_efficient_wq, &dc->writeback_rate_update,
 			      dc->writeback_rate_update_seconds * HZ);
 	}
 
@@ -817,7 +817,7 @@ int bch_cached_dev_writeback_start(struct cached_dev *dc)
 	dc->writeback_running = true;
 
 	WARN_ON(test_and_set_bit(BCACHE_DEV_WB_RUNNING, &dc->disk.flags));
-	schedule_delayed_work(&dc->writeback_rate_update,
+	queue_delayed_work(system_power_efficient_wq, &dc->writeback_rate_update,
 			      dc->writeback_rate_update_seconds * HZ);
 
 	bch_writeback_queue(dc);

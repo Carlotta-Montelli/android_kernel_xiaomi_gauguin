@@ -1966,7 +1966,7 @@ static int mdss_fb_blank_unblank(struct msm_fb_data_type *mfd)
 
 		/* Start the work thread to signal idle time */
 		if (mfd->idle_time)
-			schedule_delayed_work(&mfd->idle_notify_work,
+			queue_delayed_work(system_power_efficient_wq, &mfd->idle_notify_work,
 				msecs_to_jiffies(mfd->idle_time));
 	}
 
