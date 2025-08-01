@@ -829,7 +829,6 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 	struct udphdr *uh;
 	struct sock *sk;
 	u32 ulen = 0;
-	bool refcounted;
 
 	if (!pskb_may_pull(skb, sizeof(struct udphdr)))
 		goto discard;
@@ -865,7 +864,7 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 		goto csum_error;
 
 	/* Check if the socket is already available, e.g. due to early demux */
-	sk = skb_steal_sock(skb, &refcounted);
+	sk = skb_steal_sock(skb);
 	if (sk) {
 		struct dst_entry *dst = skb_dst(skb);
 		int ret;
@@ -874,14 +873,12 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 			udp6_sk_rx_dst_set(sk, dst);
 
 		if (!uh->check && !udp_sk(sk)->no_check6_rx) {
-			if (refcounted)
-				sock_put(sk);
+			sock_put(sk);
 			goto report_csum_error;
 		}
 
 		ret = udp6_unicast_rcv_skb(sk, skb, uh);
-		if (refcounted)
-			sock_put(sk);
+		sock_put(sk);
 		return ret;
 	}
 
