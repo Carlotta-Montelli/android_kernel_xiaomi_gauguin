@@ -6221,10 +6221,10 @@ static int fixup_call_args(struct bpf_verifier_env *env)
 	struct bpf_insn *insn = prog->insnsi;
 	int i, depth;
 #endif
-	int err = 0;
+	int err;
 
-	if (env->prog->jit_requested &&
-	    !bpf_prog_is_dev_bound(env->prog->aux)) {
+	err = 0;
+	if (env->prog->jit_requested) {
 		err = jit_subprogs(env);
 		if (err == 0)
 			return 0;
