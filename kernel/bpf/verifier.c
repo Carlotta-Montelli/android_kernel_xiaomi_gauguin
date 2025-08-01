@@ -5382,6 +5382,7 @@ enum {
 	BRANCH = 2,
 };
 
+#define STATE_LIST_MARK ((struct bpf_verifier_state_list *) -1L)
 static struct bpf_verifier_state_list **explored_state(
 					struct bpf_verifier_env *env,
 					int idx)
@@ -5391,7 +5392,7 @@ static struct bpf_verifier_state_list **explored_state(
 
 static void init_explored_state(struct bpf_verifier_env *env, int idx)
 {
-	env->insn_aux_data[idx].prune_point = true;
+	env->explored_states[idx] = STATE_LIST_MARK;
 }
 
 static int *insn_stack;	/* stack of insns to process */
@@ -5922,7 +5923,10 @@ static void clean_live_states(struct bpf_verifier_env *env, int insn,
 	int i;
 
 	sl = *explored_state(env, insn);
-	while (sl) {
+	if (!sl)
+		return;
+
+	while (sl != STATE_LIST_MARK) {
 		if (sl->state.curframe != cur->curframe)
 			goto next;
 		for (i = 0; i <= cur->curframe; i++)
@@ -6244,18 +6248,18 @@ static int is_state_visited(struct bpf_verifier_env *env, int insn_idx)
 	struct bpf_verifier_state *cur = env->cur_state, *new;
 	int i, j, err, states_cnt = 0;
 
-	if (!env->insn_aux_data[insn_idx].prune_point)
+	pprev = explored_state(env, insn_idx);
+	sl = *pprev;
+
+	if (!sl)
 		/* this 'insn_idx' instruction wasn't marked, so we will not
 		 * be doing state search here
 		 */
 		return 0;
 
-	pprev = explored_state(env, insn_idx);
-	sl = *pprev;
-
 	clean_live_states(env, insn_idx, cur);
 
-	while (sl) {
+	while (sl != STATE_LIST_MARK) {
 		if (states_equal(env, &sl->state, cur)) {
 			sl->hit_cnt++;
 			/* reached equivalent register/stack state,
@@ -7735,12 +7739,13 @@ static void free_states(struct bpf_verifier_env *env)
 	for (i = 0; i < env->prog->len; i++) {
 		sl = env->explored_states[i];
 
-		while (sl) {
-			sln = sl->next;
-			free_verifier_state(&sl->state, false);
-			kfree(sl);
-			sl = sln;
-		}
+		if (sl)
+			while (sl != STATE_LIST_MARK) {
+				sln = sl->next;
+				free_verifier_state(&sl->state, false);
+				kfree(sl);
+				sl = sln;
+			}
 	}
 
 	kfree(env->explored_states);
