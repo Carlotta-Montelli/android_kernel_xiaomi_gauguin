@@ -397,23 +397,6 @@ static bool btf_type_is_datasec(const struct btf_type *t)
 	return BTF_INFO_KIND(t->info) == BTF_KIND_DATASEC;
 }
 
-
-const struct btf_type *btf_type_skip_modifiers(const struct btf *btf,
-                           u32 id, u32 *res_id)
-{
-    const struct btf_type *t = btf_type_by_id(btf, id);
-
-    while (btf_type_is_modifier(t)) {
-        id = t->type;
-        t = btf_type_by_id(btf, t->type);
-    }
-
-    if (res_id)
-        *res_id = id;
-
-    return t;
-}
-
 /* Types that act only as a source, not sink or intermediate
  * type when resolving.
  */
@@ -3640,7 +3623,6 @@ again:
 
 		if (btf_type_is_ptr(mtype)) {
 			const struct btf_type *stype;
-			u32 id;
 
 			if (msize != size || off != moff) {
 				bpf_log(log,
@@ -3649,9 +3631,12 @@ again:
 				return -EACCES;
 			}
 
-			stype = btf_type_skip_modifiers(btf_vmlinux, mtype->type, &id);
+			stype = btf_type_by_id(btf_vmlinux, mtype->type);
+			/* skip modifiers */
+			while (btf_type_is_modifier(stype))
+				stype = btf_type_by_id(btf_vmlinux, stype->type);
 			if (btf_type_is_struct(stype)) {
-				*next_btf_id = id;
+				*next_btf_id = mtype->type;
 				return PTR_TO_BTF_ID;
 			}
 		}
