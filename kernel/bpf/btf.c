@@ -526,44 +526,48 @@ bool btf_name_offset_valid(const struct btf *btf, u32 offset)
 		offset < btf->hdr.str_len;
 }
 
-static bool __btf_name_char_ok(char c, bool first)
+static bool __btf_name_char_ok(char c, bool first, bool dot_ok)
 {
 	if ((first ? !isalpha(c) :
 		     !isalnum(c)) &&
 	    c != '_' &&
-	    c != '.')
+	    ((c == '.' && !dot_ok) ||
+	      c != '.'))
 		return false;
 	return true;
 }
 
-static bool __btf_name_valid(const struct btf *btf, u32 offset)
+static bool __btf_name_valid(const struct btf *btf, u32 offset, bool dot_ok)
 {
 	/* offset must be valid */
 	const char *src = &btf->strings[offset];
 	const char *src_limit;
 
-	if (!__btf_name_char_ok(*src, true))
+	if (!__btf_name_char_ok(*src, true, dot_ok))
 		return false;
 
 	/* set a limit on identifier length */
 	src_limit = src + KSYM_NAME_LEN;
 	src++;
 	while (*src && src < src_limit) {
-		if (!__btf_name_char_ok(*src, false))
+		if (!__btf_name_char_ok(*src, false, dot_ok))
 			return false;
 		src++;
 	}
 	return !*src;
 }
 
+/* Only C-style identifier is permitted. This can be relaxed if
+ * necessary.
+ */
 static bool btf_name_valid_identifier(const struct btf *btf, u32 offset)
 {
-	return __btf_name_valid(btf, offset);
+	return __btf_name_valid(btf, offset, false);
 }
 
 static bool btf_name_valid_section(const struct btf *btf, u32 offset)
 {
-	return __btf_name_valid(btf, offset);
+	return __btf_name_valid(btf, offset, true);
 }
 
 static const char *__btf_name_by_offset(const struct btf *btf, u32 offset)
@@ -2500,7 +2504,7 @@ static s32 btf_var_check_meta(struct btf_verifier_env *env,
 	}
 
 	if (!t->name_off ||
-	    !__btf_name_valid(env->btf, t->name_off)) {
+	    !__btf_name_valid(env->btf, t->name_off, true)) {
 		btf_verifier_log_type(env, t, "Invalid name");
 		return -EINVAL;
 	}
