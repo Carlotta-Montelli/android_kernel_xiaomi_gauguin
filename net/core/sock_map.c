@@ -27,6 +27,8 @@ static struct bpf_map *sock_map_alloc(union bpf_attr *attr)
 	u64 cost;
 	int err;
 
+	if (!capable(CAP_NET_ADMIN))
+		return ERR_PTR(-EPERM);
 	if (attr->max_entries == 0 ||
 	    attr->key_size    != 4 ||
 	    attr->value_size  != 4 ||
@@ -793,6 +795,8 @@ static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)
 	int i, err;
 	u64 cost;
 
+	if (!capable(CAP_NET_ADMIN))
+		return ERR_PTR(-EPERM);
 	if (attr->max_entries == 0 ||
 	    attr->key_size    == 0 ||
 	    attr->value_size  != 4 ||
