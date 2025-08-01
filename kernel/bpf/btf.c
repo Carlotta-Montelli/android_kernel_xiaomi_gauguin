@@ -195,8 +195,8 @@
 	     i < btf_type_vlen(struct_type);					\
 	     i++, member++)
 
-DEFINE_IDR(btf_idr);
-DEFINE_SPINLOCK(btf_idr_lock);
+static DEFINE_IDR(btf_idr);
+static DEFINE_SPINLOCK(btf_idr_lock);
 
 struct btf {
 	void *data;
