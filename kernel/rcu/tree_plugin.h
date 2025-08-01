@@ -807,11 +807,6 @@ static void __init rcu_bootup_announce(void)
 	rcu_bootup_announce_oddness();
 }
 
-/* Because preemptible RCU does not exist, we can ignore its QSes. */
-static void rcu_preempt_qs(void)
-{
-}
-
 /*
  * Note a quiescent state for PREEMPT=n.  Because we do not need to know
  * how many quiescent states passed, just if there was at least one since
