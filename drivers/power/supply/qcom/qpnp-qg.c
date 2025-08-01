@@ -1251,23 +1251,9 @@ static void process_udata_work(struct work_struct *work)
 			struct qpnp_qg, udata_work);
 	int rc;
 	int cc_soc_delta = chip->udata.param[QG_CC_SOC].data - QG_SOC_FULL;
-	bool input_present = is_input_present(chip);
 
-	if (chip->udata.param[QG_CC_SOC].valid) {
-		if (!input_present &&
-		    chip->cc_soc < chip->udata.param[QG_CC_SOC].data) {
-			pr_info("cc_soc %d is not monotonic. old cc_soc: %d\n",
-				chip->udata.param[QG_CC_SOC].data,
-				chip->cc_soc);
-		} else if (input_present && cc_soc_delta > MAX_CC_SOC_DELTA) {
-			pr_info("cc_soc %d exceeds SOC_FULL %d, reset qg\n",
-				chip->udata.param[QG_CC_SOC].data,
-				cc_soc_delta);
-			qg_trigger_good_ocv(chip);
-		} else {
-			chip->cc_soc = chip->udata.param[QG_CC_SOC].data;
-		}
-	}
+	if (chip->udata.param[QG_CC_SOC].valid)
+		chip->cc_soc = chip->udata.param[QG_CC_SOC].data;
 
 	if (chip->udata.param[QG_BATT_SOC].valid)
 		chip->batt_soc = chip->udata.param[QG_BATT_SOC].data;
