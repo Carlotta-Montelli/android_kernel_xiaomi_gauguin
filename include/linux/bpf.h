@@ -19,7 +19,6 @@
 #include <linux/poll.h>
 
 struct bpf_verifier_env;
-struct bpf_verifier_log;
 struct perf_event;
 struct bpf_prog;
 struct bpf_map;
@@ -294,7 +293,6 @@ enum bpf_reg_type {
 	PTR_TO_TCP_SOCK_OR_NULL, /* reg points to struct tcp_sock or NULL */
 	PTR_TO_TP_BUFFER,	 /* reg points to a writable raw tp's buffer */
 	PTR_TO_XDP_SOCK,
-	PTR_TO_BTF_ID,		 /* reg points to kernel struct */
 	PTR_TO_MEM = 21,		 /* reg points to valid memory region */
 	PTR_TO_MEM_OR_NULL = 22,	 /* reg points to valid memory region or NULL */
 };
@@ -304,11 +302,7 @@ enum bpf_reg_type {
  */
 struct bpf_insn_access_aux {
 	enum bpf_reg_type reg_type;
-	union {
-		int ctx_field_size;
-		u32 btf_id;
-	};
-	struct bpf_verifier_log *log; /* for verbose logs */
+	int ctx_field_size;
 };
 
 static inline void
@@ -377,7 +371,6 @@ struct bpf_prog_aux {
 	bool offload_requested;
 	u32 func_cnt; /* used by non-func prog as the number of func progs */
 	u32 func_idx; /* 0 for non-func prog, the index in func array for func prog */
-	u32 attach_btf_id; /* in-kernel BTF type id to attach to */
 	struct bpf_prog **func;
 	void *jit_data; /* JIT specific data. arch dependent */
 	struct latch_tree_node ksym_tnode;
@@ -453,7 +446,6 @@ struct bpf_event_entry {
 
 bool bpf_prog_array_compatible(struct bpf_array *array, const struct bpf_prog *fp);
 int bpf_prog_calc_tag(struct bpf_prog *fp);
-const char *kernel_type_name(u32 btf_type_id);
 
 const struct bpf_func_proto *bpf_get_trace_printk_proto(void);
 
@@ -673,13 +665,6 @@ static inline bool unprivileged_ebpf_enabled(void)
 {
 	return !sysctl_unprivileged_bpf_disabled;
 }
-bool btf_ctx_access(int off, int size, enum bpf_access_type type,
-		    const struct bpf_prog *prog,
-		    struct bpf_insn_access_aux *info);
-int btf_struct_access(struct bpf_verifier_log *log,
-		      const struct btf_type *t, int off, int size,
-		      enum bpf_access_type atype,
-		      u32 *next_btf_id);
 
 #else /* !CONFIG_BPF_SYSCALL */
 static inline struct bpf_prog *bpf_prog_get(u32 ufd)
