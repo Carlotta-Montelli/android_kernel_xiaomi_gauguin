@@ -213,8 +213,6 @@ extern struct list_head net_namespace_list;
 struct net *get_net_ns_by_pid(pid_t pid);
 struct net *get_net_ns_by_fd(int fd);
 
-u64 net_gen_cookie(struct net *net);
-
 #ifdef CONFIG_SYSCTL
 void ipx_register_sysctl(void);
 void ipx_unregister_sysctl(void);
@@ -263,6 +261,8 @@ static inline int check_net(const struct net *net)
 
 void net_drop_ns(void *);
 
+u64 net_gen_cookie(struct net *net);
+
 #else
 
 static inline struct net *get_net(struct net *net)
@@ -288,6 +288,11 @@ int net_eq(const struct net *net1, const struct net *net2)
 static inline int check_net(const struct net *net)
 {
 	return 1;
+}
+
+static inline u64 net_gen_cookie(struct net *net)
+{
+	return 0;
 }
 
 #define net_drop_ns NULL
