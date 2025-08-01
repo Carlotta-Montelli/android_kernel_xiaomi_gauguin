@@ -485,7 +485,6 @@ static struct xdp_buff *dev_map_run_prog(struct net_device *dev,
 		break;
 	default:
 		bpf_warn_invalid_xdp_action(act);
-		fallthrough;
 	case XDP_ABORTED:
 		trace_xdp_exception(dev, xdp_prog, act);
 		break;
@@ -532,6 +531,13 @@ static void *dev_map_lookup_elem(struct bpf_map *map, void *key)
 {
 	struct bpf_dtab_netdev *obj = __dev_map_lookup_elem(map, *(u32 *)key);
 
+	return obj ? &obj->val : NULL;
+}
+
+static void *dev_map_hash_lookup_elem(struct bpf_map *map, void *key)
+{
+	struct bpf_dtab_netdev *obj = __dev_map_hash_lookup_elem(map,
+								*(u32 *)key);
 	return obj ? &obj->val : NULL;
 }
 

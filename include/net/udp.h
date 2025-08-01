@@ -521,9 +521,4 @@ static inline int udp_call_bpf(struct sock *sk, int op, u32 nargs, u32 *args)
 
 #endif
 
-static inline void udp_state_bpf(struct sock *sk)
-{
-	udp_call_bpf(sk, BPF_SOCK_OPS_VOIP_CB, 0, NULL);
-}
-
 #endif	/* _UDP_H */

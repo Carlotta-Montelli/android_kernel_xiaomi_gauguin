@@ -2334,12 +2334,6 @@ static int bpf_out_neigh_v4(struct net *net, struct sk_buff *skb,
 		struct dst_entry *dst = skb_dst(skb);
 		struct rtable *rt = container_of(dst, struct rtable, dst);
 
-		neigh = ip_neigh_for_gw(rt, skb, &is_v6gw);
-	} else if (nh->nh_family == AF_INET6) {
-		neigh = ip_neigh_gw6(dev, &nh->ipv6_nh);
-		is_v6gw = true;
-	} else if (nh->nh_family == AF_INET) {
-		neigh = ip_neigh_gw4(dev, nh->ipv4_nh);
 	} else {
 		rcu_read_unlock_bh();
 		goto out_drop;

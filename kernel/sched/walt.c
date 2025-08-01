@@ -3777,7 +3777,6 @@ int sched_ravg_window_handler(struct ctl_table *table,
 		goto unlock;
 
 	prev_value = sysctl_sched_ravg_window_nr_ticks;
-	ret = proc_douintvec_ravg_window(table, write, buffer, lenp, ppos);
 	if (ret || !write || (prev_value == sysctl_sched_ravg_window_nr_ticks))
 		goto unlock;
 
@@ -3866,7 +3865,6 @@ int sched_updown_migrate_handler(struct ctl_table *table, int write,
 		table->maxlen = sizeof(unsigned int) * cap_margin_levels;
 
 	if (!write) {
-		ret = proc_douintvec_capacity(table, write, buffer, lenp, ppos);
 		goto unlock_mutex;
 	}
 
@@ -3881,7 +3879,6 @@ int sched_updown_migrate_handler(struct ctl_table *table, int write,
 		goto unlock_mutex;
 	}
 
-	ret = proc_douintvec_capacity(table, write, buffer, lenp, ppos);
 
 	if (ret) {
 		memcpy(data, old_val, table->maxlen);

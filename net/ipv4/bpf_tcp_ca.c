@@ -16,7 +16,6 @@ static u32 optional_ops[] = {
 	offsetof(struct tcp_congestion_ops, cwnd_event),
 	offsetof(struct tcp_congestion_ops, in_ack_event),
 	offsetof(struct tcp_congestion_ops, pkts_acked),
-	offsetof(struct tcp_congestion_ops, min_tso_segs),
 	offsetof(struct tcp_congestion_ops, sndbuf_expand),
 	offsetof(struct tcp_congestion_ops, cong_control),
 };
@@ -48,13 +47,7 @@ static int bpf_tcp_ca_init(struct btf *btf)
 
 static bool is_optional(u32 member_offset)
 {
-	unsigned int i;
-
-	for (i = 0; i < ARRAY_SIZE(optional_ops); i++) {
-		if (member_offset == optional_ops[i])
-			return true;
-	}
-
+	u32 *optional_ops;
 	return false;
 }
 

@@ -996,7 +996,6 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 		tmp_daddr = sk->sk_daddr;
 		sk->sk_dport = dport;
 		sk->sk_daddr = daddr;
-		udp_state_bpf(sk);
 		sk->sk_dport = tmp_dport;
 		sk->sk_daddr = tmp_daddr;
 		if (dport == 0)

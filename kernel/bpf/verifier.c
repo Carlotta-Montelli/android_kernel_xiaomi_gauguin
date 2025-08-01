@@ -3167,7 +3167,6 @@ static bool may_access_direct_pkt_data(struct bpf_verifier_env *env,
 	case BPF_PROG_TYPE_CGROUP_SKB:
 		if (t == BPF_WRITE)
 			return false;
-		fallthrough;
 
 	/* Program types with direct read + write access go here! */
 	case BPF_PROG_TYPE_SCHED_CLS:
@@ -6267,7 +6266,6 @@ static int adjust_ptr_min_max_vals(struct bpf_verifier_env *env,
 		/* smin_val represents the known value */
 		if (known && smin_val == 0 && opcode == BPF_ADD)
 			break;
-		fallthrough;
 	case PTR_TO_PACKET_END:
 	case PTR_TO_SOCKET:
 	case PTR_TO_SOCK_COMMON:
@@ -7736,7 +7734,6 @@ static int is_pkt_ptr_branch_taken(struct bpf_reg_state *dst_reg,
 	switch (opcode) {
 	case BPF_JLE:
 		/* pkt <= pkt_end */
-		fallthrough;
 	case BPF_JGT:
 		/* pkt > pkt_end */
 		if (pkt->range == BEYOND_PKT_END)
@@ -7745,7 +7742,6 @@ static int is_pkt_ptr_branch_taken(struct bpf_reg_state *dst_reg,
 		break;
 	case BPF_JLT:
 		/* pkt < pkt_end */
-		fallthrough;
 	case BPF_JGE:
 		/* pkt >= pkt_end */
 		if (pkt->range == BEYOND_PKT_END || pkt->range == AT_PKT_END)
