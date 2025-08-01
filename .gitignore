@@ -142,5 +142,5 @@ kernel/configs/android-*.cfg
 Android.bp
 out
 log.txt
-dtbo.img
-Furina-*.zip
+AnyKernel3
+files
