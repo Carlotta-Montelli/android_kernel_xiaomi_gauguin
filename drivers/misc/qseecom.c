@@ -483,7 +483,7 @@ static int __qseecom_scm_call2_locked(uint32_t smc_id, struct scm_desc *desc)
 			mutex_lock(&app_access_lock);
 		}
 		if (retry_count == 33)
-			pr_warn("secure world has been busy for 1 second!\n");
+			pr_debug("secure world has been busy for 1 second!\n");
 	} while (ret == -EBUSY &&
 			(retry_count++ < QSEECOM_SCM_EBUSY_MAX_RETRY));
 	return ret;
@@ -1769,7 +1769,7 @@ static int __qseecom_unregister_listener_kthread_func(void *data)
 		atomic_set(&qseecom.unregister_lsnr_kthread_state,
 				LSNR_UNREG_KT_SLEEP);
 	}
-	pr_warn("kthread to unregister listener stopped\n");
+	pr_debug("kthread to unregister listener stopped\n");
 	return 0;
 }
 
@@ -2368,7 +2368,7 @@ static int __qseecom_process_reentrancy_blocked_on_listener(
 		}
 		ptr_app->blocked_on_listener_id = resp->data;
 
-		pr_warn("Lsntr %d in_use %d, block session(%d) app(%d)\n",
+		pr_debug("Lsntr %d in_use %d, block session(%d) app(%d)\n",
 			resp->data, list_ptr->listener_in_use,
 			session_id, data->client.app_id);
 
@@ -2393,7 +2393,7 @@ static int __qseecom_process_reentrancy_blocked_on_listener(
 		sigprocmask(SIG_SETMASK, &old_sigset, NULL);
 
 		ptr_app->blocked_on_listener_id = 0;
-		pr_warn("Lsntr %d is available, unblock session(%d) app(%d)\n",
+		pr_debug("Lsntr %d is available, unblock session(%d) app(%d)\n",
 			resp->data, session_id, data->client.app_id);
 
 		/* notify TZ that listener is available */
@@ -2615,7 +2615,7 @@ err_resp:
 
 		switch (resp->result) {
 		case QSEOS_RESULT_BLOCKED_ON_LISTENER:
-			pr_warn("send lsr %d rsp, but app %d block on lsr %d\n",
+			pr_debug("send lsr %d rsp, but app %d block on lsr %d\n",
 					lstnr, data->client.app_id, resp->data);
 			if (lstnr == resp->data) {
 				pr_err("lstnr %d should not be blocked!\n",
@@ -2637,7 +2637,7 @@ err_resp:
 		case QSEOS_RESULT_INCOMPLETE:
 			break;
 		case QSEOS_RESULT_CBACK_REQUEST:
-			pr_warn("get cback req app_id = %d, resp->data = %d\n",
+			pr_debug("get cback req app_id = %d, resp->data = %d\n",
 				data->client.app_id, resp->data);
 			break;
 		default:
@@ -2787,7 +2787,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 	if (copy_from_user(&load_img_req,
 				(void __user *)argp,
 				sizeof(struct qseecom_load_img_req))) {
-		pr_err("copy_from_user failed\n");
+		pr_debug("copy_from_user failed\n");
 		return -EFAULT;
 	}
 
@@ -2797,7 +2797,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 				load_img_req.app_arch == ELFCLASS32) {
 			ret = qseecom_load_commonlib_image(data, "cmnlib");
 			if (ret) {
-				pr_err("failed to load cmnlib\n");
+				pr_debug("failed to load cmnlib\n");
 				return -EIO;
 			}
 			qseecom.commonlib_loaded = true;
@@ -2808,7 +2808,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 				load_img_req.app_arch == ELFCLASS64) {
 			ret = qseecom_load_commonlib_image(data, "cmnlib64");
 			if (ret) {
-				pr_err("failed to load cmnlib64\n");
+				pr_debug("failed to load cmnlib64\n");
 				return -EIO;
 			}
 			qseecom.commonlib64_loaded = true;
@@ -2845,7 +2845,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		&qseecom.registered_app_list_head, list){
 			if (entry->app_id == app_id) {
 				if (entry->ref_cnt == U32_MAX) {
-					pr_err("App %d (%s) ref_cnt overflow\n",
+					pr_debug("App %d (%s) ref_cnt overflow\n",
 						app_id, req.app_name);
 					ret = -EINVAL;
 					goto loadapp_err;
@@ -2859,19 +2859,19 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		ret = 0;
 	} else {
 		first_time = true;
-		pr_warn("App (%s) does'nt exist, loading apps for first time\n",
+		pr_debug("App (%s) does'nt exist, loading apps for first time\n",
 			(char *)(load_img_req.img_name));
 
 		ret = qseecom_vaddr_map(load_img_req.ifd_data_fd,
 				&pa, &vaddr, &sgt, &attach, &len, &dmabuf);
 		if (ret) {
-			pr_err("Ion client could not retrieve the handle\n");
+			pr_debug("Ion client could not retrieve the handle\n");
 			ret = -ENOMEM;
 			goto loadapp_err;
 		}
 
 		if (load_img_req.mdt_len > len || load_img_req.img_len > len) {
-			pr_err("ion len %zu is smaller than mdt_len %u or img_len %u\n",
+			pr_debug("ion len %zu is smaller than mdt_len %u or img_len %u\n",
 					len, load_img_req.mdt_len,
 					load_img_req.img_len);
 			ret = -EINVAL;
@@ -2901,7 +2901,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		ret = qseecom_dmabuf_cache_operations(dmabuf,
 						QSEECOM_CACHE_CLEAN);
 		if (ret) {
-			pr_err("cache operation failed %d\n", ret);
+			pr_debug("cache operation failed %d\n", ret);
 			goto loadapp_err;
 		}
 
@@ -2909,19 +2909,19 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		ret = qseecom_scm_call(SCM_SVC_TZSCHEDULER, 1, cmd_buf,
 			cmd_len, &resp, sizeof(resp));
 		if (ret) {
-			pr_err("scm_call to load app failed\n");
+			pr_debug("scm_call to load app failed\n");
 			ret = -EINVAL;
 			goto loadapp_err;
 		}
 		ret = qseecom_dmabuf_cache_operations(dmabuf,
 						QSEECOM_CACHE_INVALIDATE);
 		if (ret) {
-			pr_err("cache operation failed %d\n", ret);
+			pr_debug("cache operation failed %d\n", ret);
 			goto loadapp_err;
 		}
 
 		if (resp.result == QSEOS_RESULT_FAILURE) {
-			pr_err("scm_call rsp.result is QSEOS_RESULT_FAILURE\n");
+			pr_debug("scm_call rsp.result is QSEOS_RESULT_FAILURE\n");
 			ret = -EFAULT;
 			goto loadapp_err;
 		}
@@ -2930,7 +2930,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 			ret = __qseecom_process_incomplete_cmd(data, &resp);
 			if (ret) {
 				/* TZ has created app_id, need to unload it */
-				pr_err("incomp_cmd err %d, %d, unload %d %s\n",
+				pr_debug("incomp_cmd err %d, %d, unload %d %s\n",
 					ret, resp.result, resp.data,
 					load_img_req.img_name);
 				__qseecom_unload_app(data, resp.data);
@@ -2940,7 +2940,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		}
 
 		if (resp.result != QSEOS_RESULT_SUCCESS) {
-			pr_err("scm_call failed resp.result unknown, %d\n",
+			pr_debug("scm_call failed resp.result unknown, %d\n",
 				resp.result);
 			ret = -EFAULT;
 			goto loadapp_err;
@@ -2977,7 +2977,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		spin_unlock_irqrestore(&qseecom.registered_app_list_lock,
 									flags);
 
-		pr_warn("App with id %u (%s) now loaded\n", app_id,
+		pr_debug("App with id %u (%s) now loaded\n", app_id,
 		(char *)(load_img_req.img_name));
 	}
 	data->client.app_id = app_id;
@@ -2989,7 +2989,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 					MAX_APP_NAME_SIZE);
 	load_img_req.app_id = app_id;
 	if (copy_to_user(argp, &load_img_req, sizeof(load_img_req))) {
-		pr_err("copy_to_user failed\n");
+		pr_debug("copy_to_user failed\n");
 		ret = -EFAULT;
 		if (first_time) {
 			spin_lock_irqsave(
@@ -3058,7 +3058,7 @@ static int __qseecom_unload_app(struct qseecom_dev_handle *data,
 	}
 	switch (resp.result) {
 	case QSEOS_RESULT_SUCCESS:
-		pr_warn("App (%d) is unloaded\n", app_id);
+		pr_debug("App (%d) is unloaded\n", app_id);
 		break;
 	case QSEOS_RESULT_INCOMPLETE:
 		ret = __qseecom_process_incomplete_cmd(data, &resp);
@@ -3066,7 +3066,7 @@ static int __qseecom_unload_app(struct qseecom_dev_handle *data,
 			pr_err("unload app %d fail proc incom cmd: %d,%d,%d\n",
 				app_id, ret, resp.result, resp.data);
 		else
-			pr_warn("App (%d) is unloaded\n", app_id);
+			pr_debug("App (%d) is unloaded\n", app_id);
 		break;
 	case QSEOS_RESULT_FAILURE:
 		pr_err("app (%d) unload_failed!!\n", app_id);
@@ -3138,7 +3138,7 @@ static int qseecom_unload_app(struct qseecom_dev_handle *data,
 			 * If unload failed due to EBUSY, don't free mem
 			 * just restore app ref_cnt and return -EBUSY
 			 */
-			pr_warn("unload ta %d(%s) EBUSY\n",
+			pr_debug("unload ta %d(%s) EBUSY\n",
 				data->client.app_id, data->client.app_name);
 			ptr_app->ref_cnt++;
 			return ret;
@@ -3275,7 +3275,7 @@ static int __qseecom_unload_app_kthread_func(void *data)
 		atomic_set(&qseecom.unload_app_kthread_state,
 				UNLOAD_APP_KT_SLEEP);
 	}
-	pr_warn("kthread to unload app stopped\n");
+	pr_debug("kthread to unload app stopped\n");
 	return 0;
 }
 
@@ -3551,7 +3551,7 @@ static int qseecom_send_service_cmd(struct qseecom_dev_handle *data,
 				resp.result);
 		}
 		if (req.cmd_id == QSEOS_RPMB_CHECK_PROV_STATUS_COMMAND) {
-			pr_warn("RPMB key status is 0x%x\n", resp.result);
+			pr_debug("RPMB key status is 0x%x\n", resp.result);
 			if (put_user(resp.result,
 				(uint32_t __user *)req.resp_buf)) {
 				ret = -EINVAL;
@@ -3660,7 +3660,7 @@ int __qseecom_process_reentrancy(struct qseecom_command_scm_resp *resp,
 
 	switch (resp->result) {
 	case QSEOS_RESULT_BLOCKED_ON_LISTENER:
-		pr_warn("App(%d) %s is blocked on listener %d\n",
+		pr_debug("App(%d) %s is blocked on listener %d\n",
 			data->client.app_id, data->client.app_name,
 			resp->data);
 		ret = __qseecom_process_reentrancy_blocked_on_listener(
@@ -4237,8 +4237,8 @@ static int __qseecom_update_cmd_buf_64(void *msg, bool cleanup,
 			goto err;
 		}
 		if (sg_ptr->nents > QSEECOM_MAX_SG_ENTRY) {
-			pr_warn("Num of scattered entries\n");
-			pr_warn(" (%d) is greater than %d\n",
+			pr_debug("Num of scattered entries\n");
+			pr_debug(" (%d) is greater than %d\n",
 				sg_ptr->nents, QSEECOM_MAX_SG_ENTRY);
 			if (cleanup) {
 				if (data->client.sec_buf_fd[i].is_sec_buf_fd &&
@@ -5087,7 +5087,7 @@ int qseecom_start_app(struct qseecom_handle **handle,
 
 	strlcpy(data->client.app_name, app_name, MAX_APP_NAME_SIZE);
 	if (app_id) {
-		pr_warn("App id %d for [%s] app exists\n", app_id,
+		pr_debug("App id %d for [%s] app exists\n", app_id,
 			(char *)app_ireq.app_name);
 		spin_lock_irqsave(&qseecom.registered_app_list_lock, flags);
 		list_for_each_entry(entry,
@@ -5107,7 +5107,7 @@ int qseecom_start_app(struct qseecom_handle **handle,
 		spin_unlock_irqrestore(
 				&qseecom.registered_app_list_lock, flags);
 		if (!found_app)
-			pr_warn("App_id %d [%s] was loaded but not registered\n",
+			pr_debug("App_id %d [%s] was loaded but not registered\n",
 					ret, (char *)app_ireq.app_name);
 	} else {
 		/* load the app and get the app_id  */
@@ -8539,7 +8539,7 @@ static int __qseecom_init_clk(enum qseecom_ce_hw_instance ce)
 			return -EIO;
 		}
 	} else {
-		pr_warn("Unable to get CE core src clk, set to NULL\n");
+		pr_debug("Unable to get CE core src clk, set to NULL\n");
 		qclk->ce_core_src_clk = NULL;
 	}
 
@@ -8648,7 +8648,7 @@ static int qseecom_retrieve_ce_data(struct platform_device *pdev)
 						"qcom,support-pfe");
 
 	if (!qseecom.support_pfe && !qseecom.support_fde) {
-		pr_warn("Device does not support PFE/FDE\n");
+		pr_debug("Device does not support PFE/FDE\n");
 		goto out;
 	}
 
@@ -8900,7 +8900,7 @@ static int qseecom_retrieve_ce_data(struct platform_device *pdev)
 			pce_entry++;
 		}
 	} else {
-		pr_warn("Device does not support FDE\n");
+		pr_debug("Device does not support FDE\n");
 		disk_encrypt_pipe = 0xff;
 	}
 	if (qseecom.support_pfe) {
@@ -8944,7 +8944,7 @@ static int qseecom_retrieve_ce_data(struct platform_device *pdev)
 			pce_entry++;
 		}
 	} else {
-		pr_warn("Device does not support PFE\n");
+		pr_debug("Device does not support PFE\n");
 		file_encrypt_pipe = 0xff;
 	}
 
@@ -9325,7 +9325,7 @@ static int qseecom_send_app_region(struct platform_device *pdev)
 	req_64bit.size = resource_size(resource);
 	cmd_buf = (void *)&req_64bit;
 	cmd_len = sizeof(struct qsee_apps_region_info_64bit_ireq);
-	pr_warn("secure app region addr=0x%llx size=0x%x\n",
+	pr_debug("secure app region addr=0x%llx size=0x%x\n",
 			req_64bit.addr, req_64bit.size);
 
 	rc = __qseecom_enable_clk(CLK_QSEE);
@@ -9515,7 +9515,7 @@ static int qseecom_parse_dt(struct platform_device *pdev)
 	if (of_property_read_u32((&pdev->dev)->of_node,
 			"qcom,qsee-reentrancy-support",
 			&qseecom.qsee_reentrancy_support)) {
-		pr_warn("qsee reentrancy support phase is not defined, setting to default 0\n");
+		pr_debug("qsee reentrancy support phase is not defined, setting to default 0\n");
 		qseecom.qsee_reentrancy_support = 0;
 	}
 
@@ -9604,7 +9604,7 @@ static int qseecom_register_heap_shmbridge(uint32_t heapid, uint64_t *handle)
 				PERM_READ | PERM_WRITE, handle);
 	}
 
-	pr_warn("Could not get heap %d info: No shmbridge created\n", heapid);
+	pr_debug("Could not get heap %d info: No shmbridge created\n", heapid);
 	return 0;
 }
 

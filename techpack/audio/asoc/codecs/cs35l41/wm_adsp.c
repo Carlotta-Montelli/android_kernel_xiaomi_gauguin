@@ -904,7 +904,7 @@ static int wm_adsp_cal_z_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.enumerated.item[0] = dsp->cal_z;
 
-	adsp_info(dsp, "get cal_z = %d\n",
+	adsp_dbg(dsp, "get cal_z = %d\n",
             ucontrol->value.enumerated.item[0]);
 
 	return 0;
@@ -933,7 +933,7 @@ static int wm_adsp_ambient_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.enumerated.item[0] = dsp->ambient;
 
-	adsp_info(dsp, "get ambient = %d\n",
+	adsp_dbg(dsp, "get ambient = %d\n",
             ucontrol->value.enumerated.item[0]);
 
 	return 0;
@@ -960,7 +960,7 @@ static int wm_adsp_cal_status_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.enumerated.item[0] = dsp->cal_status;
 
-	adsp_info(dsp, "get calib status=%d\n",
+	adsp_dbg(dsp, "get calib status=%d\n",
             ucontrol->value.enumerated.item[0]);
 
 	return 0;
@@ -2264,7 +2264,7 @@ static int wm_adsp_load(struct wm_adsp *dsp)
 
 		if (text) {
 			memcpy(text, region->data, le32_to_cpu(region->len));
-			adsp_info(dsp, "%s: %s\n", file, text);
+			adsp_dbg(dsp, "%s: %s\n", file, text);
 			kfree(text);
 			text = NULL;
 		}
@@ -2571,7 +2571,7 @@ static int wm_adsp1_setup_algs(struct wm_adsp *dsp)
 	}
 
 	for (i = 0; i < n_algs; i++) {
-		adsp_info(dsp, "%d: ID %x v%d.%d.%d DM@%x ZM@%x\n",
+		adsp_dbg(dsp, "%d: ID %x v%d.%d.%d DM@%x ZM@%x\n",
 			  i, be32_to_cpu(adsp1_alg[i].alg.id),
 			  (be32_to_cpu(adsp1_alg[i].alg.ver) & 0xff0000) >> 16,
 			  (be32_to_cpu(adsp1_alg[i].alg.ver) & 0xff00) >> 8,

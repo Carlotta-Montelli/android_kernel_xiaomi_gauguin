@@ -165,7 +165,7 @@ static int cs35l41_dsp_power_ev(struct snd_soc_dapm_widget *w,
 	struct cs35l41_private *cs35l41 =
 		snd_soc_component_get_drvdata(component);
 
-	dev_info(cs35l41->dev, "%s: event = %d\n",__func__, event);
+	dev_dbg(cs35l41->dev, "%s: event = %d\n",__func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -203,7 +203,7 @@ static int cs35l41_dsp_load_ev(struct snd_soc_dapm_widget *w,
 	struct cs35l41_private *cs35l41 =
 		snd_soc_component_get_drvdata(component);
 
-	dev_info(cs35l41->dev, "%s: event = %d\n",__func__, event);
+	dev_dbg(cs35l41->dev, "%s: event = %d\n",__func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -381,7 +381,7 @@ static int cs35l41_digital_mute_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = 0;
 
-	dev_info(cs35l41->dev, "%s: %d\n", __func__, 0);
+	dev_dbg(cs35l41->dev, "%s: %d\n", __func__, 0);
 
 	return 0;
 }
@@ -398,7 +398,7 @@ static int cs35l41_digital_mute_put(struct snd_kcontrol *kcontrol,
 
 	int mute = !!ucontrol->value.integer.value[0];
 
-	dev_info(cs35l41->dev, "%s: %d\n", __func__,
+	dev_dbg(cs35l41->dev, "%s: %d\n", __func__,
             mute);
 	switch (mute) {
 	case 0:
@@ -967,7 +967,7 @@ static int cs35l41_vol_ramp0(struct cs35l41_private *cs35l41,
 	}
 
 	if (final_y <= init_y) {
-		dev_info(cs35l41->dev, "Vol ramp slope is not positive\n");
+		dev_dbg(cs35l41->dev, "Vol ramp slope is not positive\n");
 		cs35l41_set_vol((int)init_y, cs35l41);
 		usleep_range(final_x, final_x + 1);
 		cs35l41_set_vol((int)final_y, cs35l41);
@@ -1118,7 +1118,7 @@ static int cs35l41_put_ramp_status(struct snd_kcontrol *kcontrol,
 	component = snd_soc_kcontrol_component(kcontrol);
 	cs35l41 = snd_soc_component_get_drvdata(component);
 
-	dev_info(cs35l41->dev,
+	dev_dbg(cs35l41->dev,
 		 "Volume ramp status cannot be set\n");
 	return 0;
 }
@@ -1591,7 +1591,7 @@ static irqreturn_t cs35l41_irq(int irq, void *data)
 	unsigned int status[4] = {0, 0, 0, 0};
 	unsigned int masks[4] = {0, 0, 0, 0};
 	unsigned int i;
-	dev_info(cs35l41->dev, "step into cs35l41 irq handler\n");
+	dev_dbg(cs35l41->dev, "step into cs35l41 irq handler\n");
 
 	for (i = 0; i < ARRAY_SIZE(status); i++) {
 		regmap_read(cs35l41->regmap,
@@ -1817,7 +1817,7 @@ static int cs35l41_main_amp_event(struct snd_soc_dapm_widget *w,
 	bool pdn;
 	unsigned int val;
 
-	dev_info(cs35l41->dev,"%s, event = %d.\n", __func__, event);
+	dev_dbg(cs35l41->dev,"%s, event = %d.\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1878,7 +1878,7 @@ static int cs35l41_main_amp_event(struct snd_soc_dapm_widget *w,
 			}
 			ret = cs35l41_set_csplmboxcmd(cs35l41, mboxcmd);
 			if (ret && cs35l41->reload_status == FW_RELOAD_DONE) {
-				dev_info(cs35l41->dev, "reload: ret=%d, PMD=%d, status=0x%x\n",
+				dev_dbg(cs35l41->dev, "reload: ret=%d, PMD=%d, status=0x%x\n",
 						ret, event, cs35l41->reload_status);
 				cs35l41->reload_status = FW_RELOAD_NEED;
 			}
@@ -1941,7 +1941,7 @@ static int cs35l41_main_amp_event(struct snd_soc_dapm_widget *w,
 			|| (cs35l41->reload_status==FW_RELOAD_NEED
 				&& event==SND_SOC_DAPM_POST_PMU)) {
 
-		dev_info(cs35l41->dev, "reload: ret=%d, PMU=%d, status=0x%x\n",
+		dev_dbg(cs35l41->dev, "reload: ret=%d, PMU=%d, status=0x%x\n",
 				ret, event, cs35l41->reload_status);
 
 		cs35l41->reload_status = FW_RELOAD_PROC;
@@ -1995,7 +1995,7 @@ static void cs35l41_fw_reload_work(struct work_struct *work)
 		memcpy(fullname, wname, strlen(wname));
 	}
 
-	dev_info(cs35l41->dev, "%s: '%s' \n", __func__, fullname);
+	dev_dbg(cs35l41->dev, "%s: '%s' \n", __func__, fullname);
 
 	mutex_lock(&cs35l41->reload_lock);
 	cs35l41->halo_booted = false;
@@ -2035,7 +2035,7 @@ static void cs35l41_fw_reload_work(struct work_struct *work)
 
 	/* Don't power up if the component in deactive status*/
 	if (component->active <= 0) {
-		dev_info(cs35l41->dev, "%s: component active = \n",
+		dev_dbg(cs35l41->dev, "%s: component active = \n",
 				__func__, component->active);
 		mutex_unlock(&cs35l41->reload_lock);
 		return;
@@ -2063,25 +2063,25 @@ static void cs35l41_fw_force_reload(struct snd_soc_component *component)
 		snd_soc_component_get_drvdata(component);
 	__be32 st_ctl, st_ctl1;
 
-	dev_info(cs35l41->dev, "%s: Core status checking...\n", __func__);
+	dev_dbg(cs35l41->dev, "%s: Core status checking...\n", __func__);
 
 	/* Error if 1 */
 	wm_adsp_read_ctl(&cs35l41->dsp, "CSPL_STATE", &st_ctl,
 			sizeof(s32));
-	dev_info(cs35l41->dev, "CSPL_STATE= %x\n",
+	dev_dbg(cs35l41->dev, "CSPL_STATE= %x\n",
 			be32_to_cpu(st_ctl));
 
 	/* Error if !=2 */
 	wm_adsp_read_ctl(&cs35l41->dsp, "HALO_STATE", &st_ctl,
 			sizeof(s32));
-	dev_info(cs35l41->dev, "HALO_STATE=%x\n",
+	dev_dbg(cs35l41->dev, "HALO_STATE=%x\n",
 			be32_to_cpu(st_ctl));
 
 	wm_adsp_read_ctl(&cs35l41->dsp, "HALO_HEARTBEAT", &st_ctl,
 			sizeof(s32));
 	wm_adsp_read_ctl(&cs35l41->dsp, "HALO_HEARTBEAT", &st_ctl1,
 			sizeof(s32));
-	dev_info(cs35l41->dev, "HALO_HEARTBEAT = '%s'\n",
+	dev_dbg(cs35l41->dev, "HALO_HEARTBEAT = '%s'\n",
 			st_ctl == st_ctl1 ? "DEAD" : "LIVE");
 
 	/* Copy from wm_adsp.c */
@@ -2096,7 +2096,7 @@ static void cs35l41_fw_force_reload(struct snd_soc_component *component)
 	cs35l41->component = component;
 	if(false == queue_delayed_work(cs35l41->wq, &cs35l41->reload_work,
 				msecs_to_jiffies(10))) {
-		dev_info(cs35l41->dev,
+		dev_dbg(cs35l41->dev,
 				"Firmware reload in processing\n");
 	}
 
@@ -2111,7 +2111,7 @@ static int cs35l41_force_reload_put(struct snd_kcontrol *kcontrol,
 	struct cs35l41_private *cs35l41 =
 		snd_soc_component_get_drvdata(component);
 
-	dev_info(cs35l41->dev, "%s: force test = %d\n",
+	dev_dbg(cs35l41->dev, "%s: force test = %d\n",
 			__func__, ucontrol->value.integer.value[0]);
 
 	cs35l41_fw_force_reload(component);
@@ -2294,7 +2294,7 @@ static int cs35l41_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 			snd_soc_component_get_drvdata(codec_dai->component);
 	unsigned int asp_fmt, lrclk_fmt, sclk_fmt, slave_mode;
 
-	dev_info(cs35l41->dev,"%s, fmt = %d.\n", __func__, fmt);
+	dev_dbg(cs35l41->dev,"%s, fmt = %d.\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBM_CFM:
@@ -2407,7 +2407,7 @@ static void cs35l41_pcm_shutdown(struct snd_pcm_substream *substream,
 	struct cs35l41_private *cs35l41 =
 			snd_soc_component_get_drvdata(dai->component);
 
-	dev_info(cs35l41->dev, "%s:shutdown dai= '%s', stream = %d, active = %d\n",
+	dev_dbg(cs35l41->dev, "%s:shutdown dai= '%s', stream = %d, active = %d\n",
 			__func__, dai->name, substream->stream, dai->active);
 
 }
@@ -2445,7 +2445,7 @@ static int cs35l41_is_speaker_in_handset(struct snd_pcm_substream *substream,
 	fw_name = cs35l41->fast_switch_names[cs35l41->fast_switch_file_idx];
 
 	if (!strcmp(fw_name, HANDSET_TUNING)) {
-		dev_info(cs35l41->dev, "%s: '%s'[%d] = '%s'\n",
+		dev_dbg(cs35l41->dev, "%s: '%s'[%d] = '%s'\n",
 				__func__, rcv_dai->name,
 				cs35l41->fast_switch_file_idx, fw_name);
 		return 1;
@@ -2465,7 +2465,7 @@ static int cs35l41_pcm_hw_params(struct snd_pcm_substream *substream,
 	u8 asp_width, asp_wl;
 
 	if (cs35l41_is_speaker_in_handset(substream, dai)) {
-		dev_info(cs35l41->dev, "%s: speaker amp"
+		dev_dbg(cs35l41->dev, "%s: speaker amp"
 				" hw_parmas in handset mode\n", __func__);
 		return 0;
 	}
@@ -2478,7 +2478,7 @@ static int cs35l41_pcm_hw_params(struct snd_pcm_substream *substream,
 	asp_wl = params_width(params);
 	asp_width = params_physical_width(params);
 
-	dev_info(cs35l41->dev, "%s: wl=%d, pwl=%d, rate=%d, active=%d\n",
+	dev_dbg(cs35l41->dev, "%s: wl=%d, pwl=%d, rate=%d, active=%d\n",
 			__func__, asp_wl, asp_width, rate, dai->active);
 
 	cs35l41->reset_cache.asp_wl = asp_wl;
@@ -2562,7 +2562,7 @@ static int cs35l41_pcm_startup(struct snd_pcm_substream *substream,
 	struct cs35l41_private *cs35l41 =
 			snd_soc_component_get_drvdata(dai->component);
 
-	dev_info(cs35l41->dev, "%s: stream = %d, dai = '%s', active = %d\n",
+	dev_dbg(cs35l41->dev, "%s: stream = %d, dai = '%s', active = %d\n",
 			__func__, substream->stream, dai->name, dai->active);
 
 #ifdef CONFIG_TARGET_SUPPORT_TDM
@@ -2587,13 +2587,13 @@ static int cs35l41_component_set_sysclk(struct snd_soc_component *component,
 				       snd_soc_component_get_drvdata(component);
 
 	if (cs35l41->extclk_freq) {
-		dev_info(cs35l41->dev, "%s: clock has beed configured,"
+		dev_dbg(cs35l41->dev, "%s: clock has beed configured,"
 				" clk_id=%d, src=%d, freq=%d\n",
 				__func__, clk_id, source, freq);
 		return 0;
 	}
 
-	dev_info(cs35l41->dev, "%s: clk_id=%d, src=%d, freq=%d\n",
+	dev_dbg(cs35l41->dev, "%s: clk_id=%d, src=%d, freq=%d\n",
 			__func__, clk_id, source, freq);
 
 	switch (clk_id) {
@@ -2666,7 +2666,7 @@ static int cs35l41_dai_set_sysclk(struct snd_soc_dai *dai,
 	unsigned int fs2_val = 0;
 	unsigned int val;
 
-	dev_info(cs35l41->dev,"%s: clk_id=%d, freq=%d, dir=%d\n",
+	dev_dbg(cs35l41->dev,"%s: clk_id=%d, freq=%d, dir=%d\n",
 			__func__, clk_id, freq, dir);
 
 	if (cs35l41_get_clk_config(freq) < 0) {
@@ -2704,7 +2704,7 @@ static int  cs35l41_digital_mute(struct snd_soc_dai *dai, int mute)
 	struct cs35l41_private *cs35l41 =
 				  snd_soc_component_get_drvdata(dai->component);
 
-	dev_info(cs35l41->dev, "%s: %d\n", __func__, mute);
+	dev_dbg(cs35l41->dev, "%s: %d\n", __func__, mute);
 
 	if (mute) {
 		regmap_update_bits(cs35l41->regmap, CS35L41_AMP_DIG_VOL_CTRL,
@@ -3205,7 +3205,7 @@ static int cs35l41_handle_of_data(struct device *dev,
 	} else {
 		/* Device tree provides file name */
 		num_fast_switch			= (size_t)ret;
-		dev_info(dev, "num_fast_switch:%zu\n", num_fast_switch);
+		dev_dbg(dev, "num_fast_switch:%zu\n", num_fast_switch);
 		cs35l41->fast_switch_names =
 			devm_kmalloc(dev, num_fast_switch * sizeof(char *),
 				     GFP_KERNEL);
@@ -3215,7 +3215,7 @@ static int cs35l41_handle_of_data(struct device *dev,
 					      cs35l41->fast_switch_names,
 					      num_fast_switch);
 		for (i = 0; i < num_fast_switch; i++) {
-			dev_info(dev, "%d:%s\n", i,
+			dev_dbg(dev, "%d:%s\n", i,
 				 cs35l41->fast_switch_names[i]);
 		}
 		cs35l41->fast_switch_enum.items	= num_fast_switch;
@@ -3900,7 +3900,7 @@ int cs35l41_probe(struct cs35l41_private *cs35l41,
 		ret = PTR_ERR(cs35l41->reset_gpio);
 		cs35l41->reset_gpio = NULL;
 		if (ret == -EBUSY) {
-			dev_info(cs35l41->dev,
+			dev_dbg(cs35l41->dev,
 				 "Reset line busy, assuming shared reset\n");
 		} else {
 			dev_err(cs35l41->dev,
@@ -4156,7 +4156,7 @@ int cs35l41_probe(struct cs35l41_private *cs35l41,
 	}
 
 	cs35l41_96k_sample_rate_init(cs35l41);
-	dev_info(cs35l41->dev, "Cirrus Logic CS35L41 (%x), Revision: %02X\n",
+	dev_dbg(cs35l41->dev, "Cirrus Logic CS35L41 (%x), Revision: %02X\n",
 			regid, reg_revid);
 
 	cs35l41->wq = create_singlethread_workqueue("cs35l41");

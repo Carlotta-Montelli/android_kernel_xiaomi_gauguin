@@ -316,7 +316,7 @@ static int qg_store_soc_params(struct qpnp_qg *chip)
 
 	rc = qg_get_battery_temp(chip, &batt_temp);
 	if (rc < 0)
-		pr_err("Failed to get battery-temp, rc = %d\n", rc);
+		pr_debug("Failed to get battery-temp, rc = %d\n", rc);
 	else
 		chip->sdam_data[SDAM_TEMP] = (u32)batt_temp;
 

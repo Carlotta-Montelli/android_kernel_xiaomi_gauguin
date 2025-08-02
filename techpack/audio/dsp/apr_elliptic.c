@@ -173,7 +173,7 @@ int32_t ultrasound_apr_set_parameter(int32_t port_id, uint32_t param_id,
 	int32_t  ret = 0;
 	uint32_t module_id;
 
-	pr_err("%s: port_id %x, param_id %x, module_id %x\n",
+	pr_debug("%s: port_id %x, param_id %x, module_id %x\n",
 			__func__, port_id, param_id, module_id);
 
 	if (port_id == ELLIPTIC_PORT_ID)
