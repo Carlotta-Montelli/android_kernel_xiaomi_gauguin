@@ -58,7 +58,7 @@ static long xiaomi_touch_dev_ioctl(struct file *file, unsigned int cmd,
 	mutex_lock(&dev->mutex);
 	ret = copy_from_user(&buf, (int __user *)argp, sizeof(buf));
 
-	MI_TOUCH_LOGI(1, "%s %s: cmd:%d, mode:%d, value:%d\n",
+	MI_TOUCH_LOGD(1, "%s %s: cmd:%d, mode:%d, value:%d\n",
 		MI_TAG, __func__, user_cmd, buf[0], buf[1]);
 
 	switch (user_cmd) {

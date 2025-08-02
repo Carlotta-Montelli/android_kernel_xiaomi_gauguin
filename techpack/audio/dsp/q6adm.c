@@ -983,7 +983,7 @@ int adm_apr_send_pkt(void *data, wait_queue_head_t *wait,
 		opcode != ADM_CMD_DEVICE_CLOSE_V5) {
 		if (atomic_read(&this_adm.copp.cnt[port_idx][copp_idx])
 			== 0) {
-			pr_err("%s: port[0x%x] copp[0x%x] inactive\n",
+			pr_debug("%s: port[0x%x] copp[0x%x] inactive\n",
 				__func__, port_idx, copp_idx);
 			mutex_unlock(&this_adm.adm_apr_lock);
 			return -EINVAL;

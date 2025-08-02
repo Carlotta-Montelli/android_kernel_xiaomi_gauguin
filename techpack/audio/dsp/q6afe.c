@@ -8705,7 +8705,7 @@ int afe_close(int port_id)
 		afe_close_done[port_id & 0x1] = true;
 		return -EINVAL;
 	}
-	pr_info("%s: port_id = 0x%x\n", __func__, port_id);
+	pr_debug("%s: port_id = 0x%x\n", __func__, port_id);
 	if ((port_id == RT_PROXY_DAI_001_RX) ||
 			(port_id == RT_PROXY_DAI_002_TX)) {
 		pr_debug("%s: before decrementing pcm_afe_instance %d\n",

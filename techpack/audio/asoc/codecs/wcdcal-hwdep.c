@@ -60,19 +60,19 @@ static int wcdcal_hwdep_ioctl_shared(struct snd_hwdep *hw,
 	void *data;
 
 	if (!test_bit(fw_user.cal_type, fw_data->cal_bit)) {
-		pr_err("%s: codec didn't set this %d!!\n",
+		pr_debug("%s: codec didn't set this %d!!\n",
 				__func__, fw_user.cal_type);
 		return -EFAULT;
 	}
 	if (fw_user.cal_type >= WCD9XXX_MAX_CAL ||
 		fw_user.cal_type < WCD9XXX_MIN_CAL) {
-		pr_err("%s: wrong cal type sent %d\n",
+		pr_debug("%s: wrong cal type sent %d\n",
 				__func__, fw_user.cal_type);
 		return -EFAULT;
 	}
 	if (fw_user.size > cal_size_info[fw_user.cal_type] ||
 		fw_user.size <= 0) {
-		pr_err("%s: incorrect firmware size %d for %s\n",
+		pr_debug("%s: incorrect firmware size %d for %s\n",
 			__func__, fw_user.size,
 			cal_name_info[fw_user.cal_type]);
 		return -EFAULT;
