@@ -3,7 +3,11 @@ CONFIG_AUDIT=y
 CONFIG_BPF_LSM=y
 CONFIG_BPF_PRELOAD=y
 CONFIG_USERMODE_DRIVER=y
-CONFIG_LSM="integrity,bpf"
+CONFIG_TASKS_TRACE_RCU=y
+CONFIG_ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE=y
+# CONFIG_SECURITY_SAFESETID is not set
+# CONFIG_SECURITY_LOCKDOWN_LSM is not set
+CONFIG_LSM="lockdown,yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmour,bpf"
 # CONFIG_FAKE_UNAME_NONE is not set
 # CONFIG_FAKE_UNAME_5_4 is not set
 # CONFIG_FAKE_UNAME_5_10 is not set
