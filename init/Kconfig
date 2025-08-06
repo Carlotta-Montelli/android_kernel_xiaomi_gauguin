@@ -58,6 +58,9 @@ config FAKE_UNAME_NONE
     help
       Don't spoof uname version.
 
+config FAKE_UNAME_4_19
+    bool "4.19"
+
 config FAKE_UNAME_5_4
     bool "5.4"
 

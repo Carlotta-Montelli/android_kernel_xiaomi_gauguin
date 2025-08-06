@@ -1295,7 +1295,9 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	    !strncmp(current->comm, "netbpfload", 10) ||
 	    !strncmp(current->comm, "netd", 4) ||
 	    !strncmp(current->comm, "uprobestats", 11)) {
-#if defined(CONFIG_FAKE_UNAME_5_4)
+#if defined(CONFIG_FAKE_UNAME_4_19)
+		strcpy(tmp.release, "4.19.325");
+#elif defined(CONFIG_FAKE_UNAME_5_4)
 		strcpy(tmp.release, "5.4.186");
 #elif defined(CONFIG_FAKE_UNAME_5_10)
 		strcpy(tmp.release, "5.10.218");
