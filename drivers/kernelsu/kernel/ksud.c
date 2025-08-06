@@ -80,7 +80,7 @@ void ksu_on_post_fs_data(void)
         return;
     }
     done = true;
-    pr_info("%s!\n", __func__);
+   pr_info("%s!\n", __func__);
     ksu_load_allow_list();
     stop_input_hook();
 
@@ -200,7 +200,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             const char __user *p = get_user_arg_ptr(*argv, 1);
             if (p && !IS_ERR(p)) {
                 char first_arg[16];
-                ksu_strncpy_from_user_retry(
+                ksu_strncpy_from_user_nofault(
                     first_arg, p, sizeof(first_arg));
                 pr_info("/system/bin/init first arg: %s\n",
                         first_arg);
@@ -225,7 +225,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             const char __user *p = get_user_arg_ptr(*argv, 1);
             if (p && !IS_ERR(p)) {
                 char first_arg[16];
-                ksu_strncpy_from_user_retry(
+                ksu_strncpy_from_user_nofault(
                     first_arg, p, sizeof(first_arg));
                 pr_info("/init first arg: %s\n", first_arg);
                 if (!strcmp(first_arg, "--second-stage")) {
@@ -250,7 +250,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
                     }
                     char env[256];
                     // Reading environment variable strings from user space
-                    if (ksu_strncpy_from_user_retry(
+                    if (ksu_strncpy_from_user_nofault(
                             env, p, sizeof(env)) < 0)
                         continue;
                     // Parsing environment variable names and values
@@ -519,6 +519,17 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
     filename_p = &filename_in;
     return ksu_handle_execveat_ksud(AT_FDCWD, &filename_p, &argv, NULL,
                                     NULL);
+}
+
+__maybe_unused static int vfs_read_handler_pre(struct kprobe *p,
+                                               struct pt_regs *regs)
+{
+    struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
+    char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
+    size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
+    loff_t **pos_ptr = (loff_t **)&PT_REGS_CCALL_PARM4(regs);
+
+    return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
 }
 
 static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)

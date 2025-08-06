@@ -52,9 +52,6 @@ static inline const struct cred *get_cred_rcu(const struct cred *cred)
 extern long ksu_strncpy_from_user_nofault(char *dst,
 					  const void __user *unsafe_addr,
 					  long count);
-extern long ksu_strncpy_from_user_retry(char *dst,
-					  const void __user *unsafe_addr,
-					  long count);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 extern struct key *init_session_keyring;
@@ -69,9 +66,9 @@ extern ssize_t ksu_kernel_write_compat(struct file *p, const void *buf,
 				       size_t count, loff_t *pos);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
-#define ksu_access_ok(addr, size)	access_ok(addr, size)
+#define ksu_access_ok(addr, size)	(access_ok(addr, size))
 #else
-#define ksu_access_ok(addr, size)	access_ok(VERIFY_READ, addr, size)
+#define ksu_access_ok(addr, size)	(access_ok(VERIFY_READ, addr, size))
 #endif
 
 #endif

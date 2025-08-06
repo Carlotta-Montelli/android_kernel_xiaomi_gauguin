@@ -390,6 +390,8 @@ void ksu_track_throne()
 
 	// Check if any manager exists (traditional or dynamic)
 	bool manager_exist = false;
+	
+	// Check for traditional manager
 	list_for_each_entry (np, &uid_list, list) {
 		// if manager is installed in work profile, the uid in packages.list is still equals main profile
 		// don't delete it in this case!
@@ -429,7 +431,6 @@ void ksu_track_throne()
 prune:
 	// then prune the allowlist
 	ksu_prune_allowlist(is_uid_exist, &uid_list);
-	
 out:
 	// free uid_list
 	list_for_each_entry_safe (np, n, &uid_list, list) {

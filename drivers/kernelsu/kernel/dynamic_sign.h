@@ -37,7 +37,7 @@ int ksu_get_active_managers(struct manager_list_info *info);
 // Multi-manager APK verification
 bool ksu_is_multi_manager_apk(char *path, int *signature_index);
 
-// Manager rescanning functionality
-bool ksu_trigger_manager_rescan(void);
+// Get dynamic sign configuration for signature verification
+bool ksu_get_dynamic_sign_config(unsigned int *size, const char **hash);
 
 #endif
