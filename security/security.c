@@ -30,7 +30,6 @@
 #include <linux/personality.h>
 #include <linux/backing-dev.h>
 #include <linux/string.h>
-#include <linux/task_integrity.h>
 #include <linux/msg.h>
 #include <net/flow.h>
 
