@@ -21,6 +21,7 @@
 #include "step-chg-jeita.h"
 #include "storm-watch.h"
 #include "schgm-flash.h"
+#include <linux/module.h>
 #ifdef CONFIG_FORCE_FAST_CHARGE
 #include <linux/fastchg.h>
 #endif
@@ -45,6 +46,10 @@
 	&& (!chg->typec_legacy || chg->typec_legacy_use_rp_icl))
 
 static int bypass_charging = 0;
+module_param(bypass_charging, int, 0644);
+
+bool skip_thermal = false;
+module_param(skip_thermal, bool, 0644);
 
 static void update_sw_icl_max(struct smb_charger *chg, int pst);
 static int smblib_get_prop_typec_mode(struct smb_charger *chg);
@@ -2670,6 +2675,7 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 	int rc;
 	union power_supply_propval batt_temp ={0,};
 	int system_temp_level = 0;
+	int temp_level;
 
 	if (val->intval < 0)
 		return -EINVAL;
@@ -2680,7 +2686,12 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 	if (val->intval > chg->thermal_levels)
 		return -EINVAL;
 
-       rc = smblib_get_prop_from_bms(chg,
+	if (skip_thermal) {
+		temp_level = chg->system_temp_level;
+		chg->system_temp_level = 0;
+	}
+
+	rc = smblib_get_prop_from_bms(chg,
         			POWER_SUPPLY_PROP_TEMP, &batt_temp);
         if (rc < 0) {
                 pr_err("Couldn't get batt temp rc=%d\n", rc);
@@ -2709,6 +2720,11 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 		queue_delayed_work(system_power_efficient_wq, &chg->thermal_setting_work, 3 * HZ);
 	else
 		smblib_therm_charging(chg);
+
+	if (skip_thermal) {
+		chg->system_temp_level = temp_level;
+	}
+
 	return 0;
 }
 
