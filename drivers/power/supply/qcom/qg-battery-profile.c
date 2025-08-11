@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
- * Copyright (C) 2021 XiaoMi, Inc.
  */
 
 #define pr_fmt(fmt)	"QG-K: %s: " fmt, __func__
@@ -479,6 +478,7 @@ int qg_batterydata_init(struct device_node *profile_node)
 		the_battery = battery;
 	}
 
+	battery->profile_node = profile_node;
 	/* parse the battery profile */
 	rc = qg_parse_battery_profile(battery);
 	if (rc < 0) {
@@ -486,7 +486,6 @@ int qg_batterydata_init(struct device_node *profile_node)
 		goto destroy_device;
 	}
 
-	battery->profile_node = profile_node;
 	pr_info("QG Battery-profile loaded\n");
 
 	return 0;
